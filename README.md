@@ -2,6 +2,8 @@
 
 This is a utility web app offering the possibility to export specific portions of Aranet4 co2 data. Markers can be added to the chart to indicate areas of interest.
 
+Please visit the live app at [https://the-butchers.at/aranet4_vis/](https://the-butchers.at/aranet4_vis/)
+
 Please refer to the instructions below to get started.
 
 ## 1) Import CSV Data

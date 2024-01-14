@@ -44,7 +44,6 @@ const UiComponent = (props: IUiProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [name]);
 
-
     return (
 
         <Box sx={{ display: 'flex', flexDirection: 'column', margin: '0px', padding: '12px' }}>
@@ -91,6 +90,10 @@ const UiComponent = (props: IUiProps) => {
                 props.records.length > 0 ? <Paper elevation={4} sx={{ display: 'flex', flexDirection: 'column' }}><StepComponentChart {...props} /></Paper> : null
             }
             <div style={{ height: '20px' }}></div>
+            <Paper elevation={4} sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '11px 0px' }}>
+                <a href="https://twitter.com/FleischerHannes" target='_blank' rel="noreferrer" style={{ margin: '11px 22px', whiteSpace: 'nowrap' }}>@FleischerHannes</a>
+                <a href="https://github.com/the-butcher/ARANET4_VIS" target='_blank' rel="noreferrer" style={{ margin: '11px 22px', whiteSpace: 'nowrap' }}>https://github.com/the-butcher/ARANET4_VIS</a>
+            </Paper>
         </Box>
 
     );
