@@ -1,46 +1,41 @@
-# Getting Started with Create React App
+# ARANET4_VIS
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a utility web app offering the possibility to export specific portions of Aranet4 co2 data. Markers can be added to the chart to indicate areas of interest.
 
-## Available Scripts
+Please refer to the instructions below to get started.
 
-In the project directory, you can run:
+## 1) Import CSV Data
 
-### `npm start`
+![CSV dropzone](screens/screen_01.png)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Start by exporting CSV data from your Aranet4 device. Find and press the export CSV icon in your Aranet App. Export the CSV file to a location of your choice, then import the CSV file into this app by pressing the button shown in the image or dragging the file onto the button.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+When the import succeeds, the data contained in the CSV file should display in the web app
 
-### `npm test`
+![data after importing](screens/screen_02.png)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 2) Specify chart display range
 
-### `npm run build`
+Use the chart display range area to specifiy the portion of the data you want to show.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+![Alt text](screens/screen_03.png)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 3) Add chart markers
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Create chart markers to indicate sections of interest within your data.
 
-### `npm run eject`
+![Alt text](screens/screen_04.png)
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Markers will show in the chart for better readability.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+![Alt text](screens/screen_05.png)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 4) Change chart options
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Adapt chart options as suitable.
 
-## Learn More
+![Alt text](screens/screen_06.png)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 5) Export chart
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Use the "EXPORT TO PNG" button or the keyboard shortcur "X" to export your chart as image.
