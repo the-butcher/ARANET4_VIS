@@ -6,9 +6,9 @@ Please refer to the instructions below to get started.
 
 ## 1) Import CSV Data
 
-![CSV dropzone](screens/screen_01.png)
-
 Start by exporting CSV data from your Aranet4 device. Find and press the export CSV icon in your Aranet App. Export the CSV file to a location of your choice, then import the CSV file into this app by pressing the button shown in the image or dragging the file onto the button.
+
+![CSV dropzone](screens/screen_01.png)
 
 When the import succeeds, the data contained in the CSV file should display in the web app
 
