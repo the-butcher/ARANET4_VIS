@@ -2,14 +2,15 @@ import { Divider, Typography } from "@mui/material";
 
 export interface IDividerProps {
     title?: string
+    style?: React.CSSProperties;
 }
 
 const DividerComponent = (props: IDividerProps) => {
 
-    const { title } = { ...props };
+    const { title, style } = { ...props };
 
     return (
-        <>
+        <div style={style}>
             <div style={{ height: title ? '0px' : '6px' }} />
             {
                 title ? <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -19,7 +20,7 @@ const DividerComponent = (props: IDividerProps) => {
                 </div> : <Divider />
             }
             <div style={{ height: title ? '0px' : '10px' }} />
-        </>
+        </div>
     );
 
 }

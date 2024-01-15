@@ -8,7 +8,7 @@ import { IUiProps } from "../components/IUiProps";
  */
 export class StorageUtil {
 
-    static readonly STORAGE_KEY_UI_PROPS = 'UI_PROPS_3';
+    static readonly STORAGE_KEY_UI_PROPS = 'UI_PROPS_4';
     static STORAGE_ENABLED: boolean = false;
 
     static storeUiProps(props: IUiProps): void {

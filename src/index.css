@@ -9,12 +9,6 @@ body {
   font-size: 14px !important;
 }
 
-.full_xy {
-  width: 100%;
-  height: 100%;
-  margin: 0px
-}
-
 @font-face {
   font-family: "Courier Prime Sans";
   src: url("Courier Prime Sans.ttf") format("truetype");

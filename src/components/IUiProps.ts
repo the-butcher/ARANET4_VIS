@@ -1,3 +1,25 @@
+export type DAY_OF_WEEK = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
+export const DAYS_OF_WEEK: DAY_OF_WEEK[] = [
+    'MON',
+    'TUE',
+    'WED',
+    'THU',
+    'FRI',
+    'SAT',
+    'SUN'
+];
+export const INDICES_OF_DAYS: DAY_OF_WEEK[] = [
+    'SUN',
+    'MON',
+    'TUE',
+    'WED',
+    'THU',
+    'FRI',
+    'SAT'
+];
+
+export type SPAN_TYPE = 'display' | 'markers';
+
 export interface IRecord {
     instant: number;
     co2: number;
@@ -11,6 +33,8 @@ export interface ITimeSpan {
 export interface ITimeSpanNamed extends ITimeSpan {
     uuid: string;
     title: string;
+    days: DAY_OF_WEEK[];
+    spanType: SPAN_TYPE;
 }
 
 export interface IChartOptions {
@@ -30,6 +54,6 @@ export interface IUiProps {
     chartOptions: IChartOptions,
     handleRecordUpdate: (name: string, records: IRecord[]) => void;
     handleTimeSpanUserUpdate: (timeSpanUser: ITimeSpan) => void;
-    handleTimeSpanUpdate: (timeSpan: ITimeSpanNamed) => void;
+    handleMarkSpanUpdate: (markSpan: ITimeSpanNamed) => void;
     handleChartOptionsUpdate: (update: Partial<IChartOptions>) => void;
 }

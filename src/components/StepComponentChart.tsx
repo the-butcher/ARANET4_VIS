@@ -8,7 +8,7 @@ import { ColorUtil } from "../util/ColorUtil";
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
-import { IUiProps } from "./IUiProps";
+import { INDICES_OF_DAYS, ITimeSpan, IUiProps } from "./IUiProps";
 
 const CHART_DIV_ID = 'chartdiv';
 
@@ -65,6 +65,8 @@ const StepComponentChart = (props: IUiProps) => {
         title.marginBottom = 12 / window.devicePixelRatio;
 
         let dateAxis = chartRef.current.xAxes.push(new am4charts.DateAxis());
+        // dateAxis.skipEmptyPeriods = true;
+
         dateAxis.renderer.grid.template.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         dateAxis.renderer.labels.template.visible = true;
         dateAxis.renderer.labels.template.rotation = -90;
@@ -96,7 +98,6 @@ const StepComponentChart = (props: IUiProps) => {
         dateAxis.tooltip!.label.fontFamily = fontFamily;
         dateAxis.tooltip!.label.fontSize = fontSize;
         dateAxis.tooltip!.label.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-
 
         const valueAxisCo2 = chartRef.current.yAxes.push(new am4charts.ValueAxis());
         valueAxisCo2.extraMax = 0.001;
@@ -167,8 +168,32 @@ const StepComponentChart = (props: IUiProps) => {
         chartRef.current.cursor.lineY.disabled = true;
         chartRef.current.cursor.behavior = 'none';
 
+        const midnightMin = TimeUtil.toMidnightInstant(timeSpanUser.instantMin);
+        const midnightMax = TimeUtil.toMidnightInstant(timeSpanUser.instantMax) + TimeUtil.MILLISECONDS_PER____DAY;
+
+        const dataRanges: ITimeSpan[] = [];
+        for (let midnight = midnightMin; midnight <= midnightMax; midnight += TimeUtil.MILLISECONDS_PER____DAY) {
+
+            timeSpans.filter(t => t.spanType === 'display').forEach(dispSpan => {
+                const instantMin = midnight + dispSpan.instantMin;
+                const instantMax = midnight + dispSpan.instantMax;
+                if (instantMax > timeSpanUser.instantMin && instantMin < timeSpanUser.instantMax) {
+                    const dayOfWeek = INDICES_OF_DAYS[new Date(instantMin).getDay()];
+                    if (dispSpan.days.find(d => d === dayOfWeek)) {
+                        dataRanges.push({
+                            instantMin,
+                            instantMax
+                        });
+                    }
+                }
+            });
+
+        }
+
         // filter by time
-        let filteredRecords = records.filter(r => r.instant >= timeSpanUser.instantMin && r.instant <= timeSpanUser.instantMax);
+        let filteredRecords = records.filter(r => {
+            return r.instant >= timeSpanUser.instantMin && r.instant <= timeSpanUser.instantMax && dataRanges.find(d => r.instant >= d.instantMin && r.instant <= d.instantMax);
+        });
         // remove every second entry until record count is manageable
         while (filteredRecords.length > window.innerWidth) {
             let count = 0;
@@ -267,16 +292,15 @@ const StepComponentChart = (props: IUiProps) => {
             }
         }
 
-        const midnightMin = TimeUtil.toMidnightInstant(timeSpanUser.instantMin);
-        const midnightMax = TimeUtil.toMidnightInstant(timeSpanUser.instantMax) + TimeUtil.MILLISECONDS_PER____DAY;
+
         for (let midnight = midnightMin; midnight <= midnightMax; midnight += TimeUtil.MILLISECONDS_PER____DAY) {
 
-            timeSpans.forEach(timeSpan => {
+            timeSpans.filter(t => t.spanType === 'markers').forEach(markSpan => {
 
-                const rangeMin = midnight + timeSpan.instantMin;
-                const rangeMax = midnight + timeSpan.instantMax;
-                if (rangeMin < timeSpanUser.instantMax) {
-                    createDateRange(rangeMin, rangeMax, timeSpan.title, 0.20);
+                const rangeMin = midnight + markSpan.instantMin;
+                const rangeMax = midnight + markSpan.instantMax;
+                if (rangeMin < timeSpanUser.instantMax && dataRanges.find(d => rangeMax >= d.instantMin && rangeMin <= d.instantMax)) {
+                    createDateRange(rangeMin, rangeMax, markSpan.title, 0.20);
                 }
 
             });

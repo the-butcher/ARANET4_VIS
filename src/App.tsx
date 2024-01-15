@@ -18,14 +18,14 @@ const App = () => {
       },
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
+      handleMarkSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
 
   }
 
-  const handleTimeSpanUpdate = (timeSpan: ITimeSpanNamed) => {
+  const handleMarkSpanUpdate = (timeSpan: ITimeSpanNamed) => {
 
     console.debug('📞 handling time span', timeSpan);
 
@@ -37,10 +37,10 @@ const App = () => {
     timeSpans.sort((a, b) => a.instantMin - b.instantMin);
     propsRef.current = {
       ...propsRef.current,
-      timeSpans,
+      timeSpans: timeSpans,
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
+      handleMarkSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
@@ -84,7 +84,7 @@ const App = () => {
       },
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
+      handleMarkSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
@@ -100,7 +100,7 @@ const App = () => {
       timeSpanUser,
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
+      handleMarkSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
@@ -128,7 +128,7 @@ const App = () => {
     },
     handleRecordUpdate,
     handleTimeSpanUserUpdate,
-    handleTimeSpanUpdate,
+    handleMarkSpanUpdate,
     handleChartOptionsUpdate
   });
   const [props, setProps] = useState<IUiProps>(propsRef.current);
@@ -147,10 +147,10 @@ const App = () => {
       propsRef.current = loadedProps;
       propsRef.current = {
         ...loadedProps,
-        timeSpans,
+        timeSpans: timeSpans,
         handleRecordUpdate,
         handleTimeSpanUserUpdate,
-        handleTimeSpanUpdate,
+        handleMarkSpanUpdate,
         handleChartOptionsUpdate
       }
       setProps(propsRef.current);

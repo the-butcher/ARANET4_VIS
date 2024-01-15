@@ -21,6 +21,13 @@ export class ThemeUtil {
             },
             components: {
 
+                MuiCollapse: {
+                    styleOverrides: {
+                        wrapperInner: {
+
+                        }
+                    }
+                },
                 MuiTypography: {
                     styleOverrides: {
                         root: {
@@ -34,7 +41,6 @@ export class ThemeUtil {
                         root: {
                             fontFamily: 'Courier Prime Sans!important',
                             fontSize: '14px!important',
-                            width: '220px',
                             margin: '0px',
                             height: '36px'
                         }
@@ -59,7 +65,6 @@ export class ThemeUtil {
                 MuiButton: {
                     styleOverrides: {
                         root: {
-                            width: '220px',
                             height: '36px',
                             margin: '8px 0px',
                         }
@@ -68,7 +73,6 @@ export class ThemeUtil {
                 MuiFormControl: {
                     styleOverrides: {
                         root: {
-                            width: '220px!important',
                             height: '36px',
                             margin: '8px 8px 8px 0px!important',
                         }
