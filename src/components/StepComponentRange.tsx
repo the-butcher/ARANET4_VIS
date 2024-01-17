@@ -1,11 +1,13 @@
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import DeleteIcon from '@mui/icons-material/Delete';
 import GradientIcon from '@mui/icons-material/Gradient';
 import RedoIcon from '@mui/icons-material/Redo';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import UndoIcon from '@mui/icons-material/Undo';
 import { Avatar, FormControl, IconButton, InputLabel, MenuItem, Select, Tab, Tabs, TextField, Typography } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import moment from 'moment';
@@ -16,9 +18,9 @@ import { ThemeUtil } from '../util/ThemeUtil';
 import { TimeUtil } from '../util/TimeUtil';
 import DividerComponent from './DividerComponent';
 import { DAYS_OF_WEEK, DAY_OF_WEEK, ITimeSpanNamed, IUiProps, SPAN_TYPE } from './IUiProps';
-import MarkSpanComponent from './MarkSpanComponent';
+import TimeSpanComponent from './TimeSpanComponent';
 
-let markSpanUpdateTimeout = -1;
+let timeSpanUpdateTimeout = -1;
 let chartTitleUpdateTimeout = -1;
 
 export const TAB_DEFS: { [K in SPAN_TYPE]: string } = {
@@ -28,7 +30,7 @@ export const TAB_DEFS: { [K in SPAN_TYPE]: string } = {
 
 const StepComponentRange = (props: IUiProps) => {
 
-    const { timeSpanData, timeSpanUser, timeSpans, chartOptions, handleTimeSpanUserUpdate, handleMarkSpanUpdate, handleChartOptionsUpdate } = { ...props };
+    const { timeSpanData, timeSpanUser, timeSpans, chartOptions, handleTimeSpanUserUpdate, handleTimeSpanUpdate, handleChartOptionsUpdate } = { ...props };
 
     const [activeTabName, setActiveTabName] = useState<SPAN_TYPE>('display');
 
@@ -37,7 +39,7 @@ const StepComponentRange = (props: IUiProps) => {
     const [formSpans, setFormSpans] = useState<ITimeSpanNamed[]>(timeSpans);
     const [formTitle, setFormTitle] = useState<string>(chartOptions.title);
 
-    const [markSpanNew, setMarkSpanNew] = useState<ITimeSpanNamed>({
+    const [timeSpanNew, setTimeSpanNew] = useState<ITimeSpanNamed>({
         uuid: ObjectUtil.createId(),
         title: '',
         instantMin: TimeUtil.toTimeOnlyDate(),
@@ -62,7 +64,7 @@ const StepComponentRange = (props: IUiProps) => {
         if (value) {
             handleTimeSpanUserUpdate({
                 ...timeSpanUser,
-                instantMin: value.unix() * 1000
+                instantMin: TimeUtil.toInstantMinUser(value.unix() * 1000)
             })
         }
     }
@@ -71,7 +73,7 @@ const StepComponentRange = (props: IUiProps) => {
         if (value) {
             handleTimeSpanUserUpdate({
                 ...timeSpanUser,
-                instantMax: value.unix() * 1000
+                instantMax: TimeUtil.toInstantMaxUser(value.unix() * 1000)
             })
         }
     }
@@ -86,19 +88,20 @@ const StepComponentRange = (props: IUiProps) => {
         }
     }
 
-    const handleMarkSpanMinChanged = (uuid: string, value: moment.Moment | null) => {
+    const handleTimeSpanMinChanged = (uuid: string, value: moment.Moment | null) => {
         if (value) {
-            if (uuid === markSpanNew.uuid) {
-                setMarkSpanNew({
-                    ...markSpanNew,
-                    instantMin: value.unix() * 1000
+            const instantMin = value.hours() * 3600000 + value.minutes() * 60000;
+            if (uuid === timeSpanNew.uuid) {
+                setTimeSpanNew({
+                    ...timeSpanNew,
+                    instantMin
                 });
             } else {
                 const formSpan = formSpans.find(t => t.uuid === uuid);
                 if (formSpan) {
                     const _formSpan: ITimeSpanNamed = {
                         ...formSpan,
-                        instantMin: value.unix() * 1000
+                        instantMin
                     };
                     handleFormSpanUpdate(_formSpan);
                 }
@@ -106,19 +109,20 @@ const StepComponentRange = (props: IUiProps) => {
         }
     }
 
-    const handleMarkSpanMaxChanged = (uuid: string, value: moment.Moment | null) => {
+    const handleTimeSpanMaxChanged = (uuid: string, value: moment.Moment | null) => {
         if (value) {
-            if (uuid === markSpanNew.uuid) {
-                setMarkSpanNew({
-                    ...markSpanNew,
-                    instantMax: value.unix() * 1000
+            const instantMax = value.hours() * 3600000 + value.minutes() * 60000;
+            if (uuid === timeSpanNew.uuid) {
+                setTimeSpanNew({
+                    ...timeSpanNew,
+                    instantMax
                 });
             } else {
                 const formSpan = formSpans.find(t => t.uuid === uuid);
                 if (formSpan) {
                     const _formSpan: ITimeSpanNamed = {
                         ...formSpan,
-                        instantMax: value.unix() * 1000
+                        instantMax
                     };
                     handleFormSpanUpdate(_formSpan);
                 }
@@ -126,11 +130,11 @@ const StepComponentRange = (props: IUiProps) => {
         }
     }
 
-    const handleMarkSpanTitleChanged = (uuid: string, title: string) => {
+    const handleTimeSpanTitleChanged = (uuid: string, title: string) => {
         if (title) {
-            if (uuid === markSpanNew.uuid) {
-                setMarkSpanNew({
-                    ...markSpanNew,
+            if (uuid === timeSpanNew.uuid) {
+                setTimeSpanNew({
+                    ...timeSpanNew,
                     title
                 });
             } else {
@@ -146,12 +150,11 @@ const StepComponentRange = (props: IUiProps) => {
         }
     }
 
-    const handleMarkSpanDaysChanged = (uuid: string, days: DAY_OF_WEEK[]) => {
-        console.log('days', days)
+    const handleTimeSpanDaysChanged = (uuid: string, days: DAY_OF_WEEK[]) => {
         if (days) {
-            if (uuid === markSpanNew.uuid) {
-                setMarkSpanNew({
-                    ...markSpanNew,
+            if (uuid === timeSpanNew.uuid) {
+                setTimeSpanNew({
+                    ...timeSpanNew,
                     days: [
                         ...days
                     ]
@@ -178,24 +181,24 @@ const StepComponentRange = (props: IUiProps) => {
         _formSpans.sort((a, b) => a.instantMin - b.instantMin);
         setFormSpans(_formSpans);
 
-        window.clearTimeout(markSpanUpdateTimeout);
-        markSpanUpdateTimeout = window.setTimeout(() => {
-            handleMarkSpanUpdate(_formSpan);
+        window.clearTimeout(timeSpanUpdateTimeout);
+        timeSpanUpdateTimeout = window.setTimeout(() => {
+            handleTimeSpanUpdate(_formSpan);
         }, 500);
 
     }
 
-    const handleMarkSpanAdd = () => {
-        handleMarkSpanUpdate(markSpanNew);
+    const handleFormSpanAdd = () => {
+        handleTimeSpanUpdate(timeSpanNew);
     }
 
-    const handleMarkSpanDelete = (uuid: string) => {
-        const _markSpan = timeSpans.find(t => t.uuid === uuid);
-        if (_markSpan) {
-            handleMarkSpanUpdate({
-                ..._markSpan,
-                instantMin: -1,
-                instantMax: -1,
+    const handleFormSpanDelete = (uuid: string) => {
+        const _formSpan = timeSpans.find(t => t.uuid === uuid);
+        if (_formSpan) {
+            handleTimeSpanUpdate({
+                ..._formSpan,
+                instantMin: Number.NEGATIVE_INFINITY,
+                instantMax: Number.NEGATIVE_INFINITY,
             });
         }
     }
@@ -210,7 +213,7 @@ const StepComponentRange = (props: IUiProps) => {
 
         console.debug(`⚙ updating ranges component (timeSpans, activeTabName)`, timeSpans, activeTabName);
 
-        setMarkSpanNew({
+        setTimeSpanNew({
             uuid: ObjectUtil.createId(),
             title: '',
             instantMin: TimeUtil.toTimeOnlyDate(),
@@ -238,26 +241,26 @@ const StepComponentRange = (props: IUiProps) => {
             <Typography sx={{ paddingRight: '10px', marginBottom: '6px' }}>You can now specify the displayed date/time range with the 'min' and 'max' date pickers. It is also possible to create chart markers, i.e. to indicate a daily timetable.</Typography>
             <DividerComponent title='chart display range' />
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: '46px' }}>
-                <DateTimePicker
+                <DatePicker
                     sx={{ margin: '6px', width: '220px' }}
-                    label="min"
+                    label="min (incl)"
                     value={moment(new Date(timeSpanUser.instantMin))}
-                    minDateTime={moment(new Date(timeSpanData.instantMin))}
-                    maxDateTime={moment(new Date(timeSpanUser.instantMax))}
+                    minDate={moment(new Date(timeSpanData.instantMin))}
+                    maxDate={moment(new Date(timeSpanUser.instantMax))}
                     onChange={handleDateUserMinChanged}
                 />
-                <DateTimePicker
+                <DatePicker
                     sx={{ margin: '6px', width: '220px' }}
-                    label="max"
+                    label="max (incl)"
                     value={moment(new Date(timeSpanUser.instantMax))}
-                    minDateTime={moment(new Date(timeSpanUser.instantMin))}
-                    maxDateTime={moment(new Date(timeSpanData.instantMax))}
+                    minDate={moment(new Date(timeSpanUser.instantMin))}
+                    maxDate={moment(new Date(timeSpanData.instantMax))}
                     onChange={handleDateUserMaxChanged}
                 />
                 <IconButton
                     disabled={(timeSpanUser.instantMin - timeSpanData.instantMin) < TimeUtil.MILLISECONDS_PER____DAY}
-                    aria-label='24 hours back'
-                    title='24 hours back'
+                    aria-label='1 day back'
+                    title='1 day back'
                     size="large"
                     onClick={() => handleDateUserMove(-TimeUtil.MILLISECONDS_PER____DAY)}
                     sx={{ width: '54px', height: '54px' }}
@@ -266,8 +269,8 @@ const StepComponentRange = (props: IUiProps) => {
                 </IconButton>
                 <IconButton
                     disabled={(timeSpanData.instantMax - timeSpanUser.instantMax) < TimeUtil.MILLISECONDS_PER____DAY}
-                    aria-label='24 hours forward'
-                    title='24 hours forward'
+                    aria-label='1 day forward'
+                    title='1 day forward'
                     size="large"
                     onClick={() => handleDateUserMove(TimeUtil.MILLISECONDS_PER____DAY)}
                     sx={{ width: '54px', height: '54px' }}
@@ -282,6 +285,7 @@ const StepComponentRange = (props: IUiProps) => {
             >
                 {Object.keys(TAB_DEFS).map(k => (
                     <Tab
+                        key={k}
                         value={k}
                         label={TAB_DEFS[k as SPAN_TYPE]}
                         sx={{ padding: '0px', margin: '0px', minHeight: '30px', borderWidth: '5px' }}
@@ -294,18 +298,18 @@ const StepComponentRange = (props: IUiProps) => {
                     {
                         formSpans.map((value, index) => (
                             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', width: 'unset' }} key={value.uuid}>
-                                <MarkSpanComponent
-                                    markSpan={value}
-                                    handleMarkSpanTitleChanged={handleMarkSpanTitleChanged}
-                                    handleMarkSpanMinChanged={handleMarkSpanMinChanged}
-                                    handleMarkSpanMaxChanged={handleMarkSpanMaxChanged}
-                                    handleMarkSpanDaysChanged={handleMarkSpanDaysChanged}
+                                <TimeSpanComponent
+                                    timeSpan={value}
+                                    handleTimeSpanTitleChanged={handleTimeSpanTitleChanged}
+                                    handleTimeSpanMinChanged={handleTimeSpanMinChanged}
+                                    handleTimeSpanMaxChanged={handleTimeSpanMaxChanged}
+                                    handleTimeSpanDaysChanged={handleTimeSpanDaysChanged}
                                 />
                                 <IconButton
                                     aria-label='delete chart marker'
                                     title='delete chart marker'
                                     size="large"
-                                    onClick={e => handleMarkSpanDelete(value.uuid)}
+                                    onClick={e => handleFormSpanDelete(value.uuid)}
                                     sx={{ width: '54px', height: '54px' }}
                                 >
                                     <DeleteIcon />
@@ -326,23 +330,23 @@ const StepComponentRange = (props: IUiProps) => {
                 onMouseOver={() => setTimeSpanNewOpacity('1.0')}
                 onMouseOut={() => setTimeSpanNewOpacity('0.5')}
                 style={{ transition: 'opacity 250ms ease-in-out', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', opacity: timeSpanNewOpacity }}
-                key={markSpanNew.uuid}
+                key={timeSpanNew.uuid}
             >
-                <MarkSpanComponent
-                    markSpan={markSpanNew}
-                    handleMarkSpanTitleChanged={handleMarkSpanTitleChanged}
-                    handleMarkSpanMinChanged={handleMarkSpanMinChanged}
-                    handleMarkSpanMaxChanged={handleMarkSpanMaxChanged}
-                    handleMarkSpanDaysChanged={handleMarkSpanDaysChanged}
+                <TimeSpanComponent
+                    timeSpan={timeSpanNew}
+                    handleTimeSpanTitleChanged={handleTimeSpanTitleChanged}
+                    handleTimeSpanMinChanged={handleTimeSpanMinChanged}
+                    handleTimeSpanMaxChanged={handleTimeSpanMaxChanged}
+                    handleTimeSpanDaysChanged={handleTimeSpanDaysChanged}
                 />
                 <IconButton
                     aria-label='create chart marker'
                     title='create chart marker'
                     size="large"
-                    onClick={handleMarkSpanAdd}
+                    onClick={handleFormSpanAdd}
                     sx={{ width: '54px', height: '54px' }}
                 >
-                    <AddCircleOutlineIcon />
+                    <MoreTimeIcon />
                 </IconButton>
             </div>
 
@@ -427,6 +431,20 @@ const StepComponentRange = (props: IUiProps) => {
                         sx={{ width: 30, height: 30, bgcolor: chartOptions.showGradientStroke ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
                     >
                         <ShowChartIcon sx={{ width: 20, height: 20 }} />
+                    </Avatar>
+                </IconButton>
+                <IconButton
+                    aria-label={chartOptions.showDates ? 'hide dates' : 'show dates'}
+                    title={chartOptions.showDates ? 'hide dates' : 'show dates'}
+                    size="large"
+                    onClick={e => handleChartOptionsUpdate({
+                        showDates: !chartOptions.showDates
+                    })}
+                >
+                    <Avatar
+                        sx={{ width: 30, height: 30, bgcolor: chartOptions.showDates ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                    >
+                        <EventAvailableIcon sx={{ width: 20, height: 20 }} />
                     </Avatar>
                 </IconButton>
             </div>

@@ -13,7 +13,9 @@ const PANEL_ID_RANGES = 'panel_id_ranges';
 
 const UiComponent = (props: IUiProps) => {
 
-    const { name, timeSpanUser } = { ...props };
+    const { name, timeSpanUser, timeSpans } = { ...props };
+
+    const [spanTitle, setSpanTitle] = useState<string>('');
 
     const [panelIds, setPanelIds] = useState<string[]>([
         PANEL_ID___FILE,
@@ -43,6 +45,21 @@ const UiComponent = (props: IUiProps) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [name]);
+
+    useEffect(() => {
+
+        console.debug(`⚙ updating ui component (timeSpans)`, timeSpans);
+
+        if (timeSpanUser.instantMin > 0) {
+
+            const displaySpanCount = props.timeSpans.filter(t => t.spanType === 'display').length;
+            const markersSpanCount = props.timeSpans.filter(t => t.spanType === 'markers').length;
+
+            setSpanTitle(` :: ${TimeUtil.formatCategoryDateFull(timeSpanUser.instantMin)} -> ${TimeUtil.formatCategoryDateFull(timeSpanUser.instantMax)}, ${displaySpanCount} display range${displaySpanCount !== 1 ? 's' : ''}, ${markersSpanCount} marker range${markersSpanCount !== 1 ? 's' : ''}`);
+
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [timeSpans]);
 
     return (
 
@@ -75,10 +92,7 @@ const UiComponent = (props: IUiProps) => {
                     sx={{ backgroundColor: ThemeUtil.COLOR_ACCORDION_BG }}
                 >
                     <Typography>
-                        SPECIFY DATA RANGES
-                        {
-                            timeSpanUser.instantMin > 0 ? <span style={{ fontSize: '0.8rem' }}> :: {TimeUtil.formatCategoryDateFull(timeSpanUser.instantMin)} -&gt; {TimeUtil.formatCategoryDateFull(timeSpanUser.instantMax)}, {props.timeSpans.length} time ranges</span> : null
-                        }
+                        SPECIFY DATA RANGES <span style={{ fontSize: '0.8rem' }}>{spanTitle}</span>
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails>

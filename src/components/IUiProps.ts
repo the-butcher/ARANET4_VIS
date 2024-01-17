@@ -43,6 +43,7 @@ export interface IChartOptions {
     showGradientStroke: boolean;
     strokeWidth: number;
     fontSize: number;
+    showDates: boolean;
 }
 
 export interface IUiProps {
@@ -54,6 +55,6 @@ export interface IUiProps {
     chartOptions: IChartOptions,
     handleRecordUpdate: (name: string, records: IRecord[]) => void;
     handleTimeSpanUserUpdate: (timeSpanUser: ITimeSpan) => void;
-    handleMarkSpanUpdate: (markSpan: ITimeSpanNamed) => void;
+    handleTimeSpanUpdate: (timeSpan: ITimeSpanNamed) => void;
     handleChartOptionsUpdate: (update: Partial<IChartOptions>) => void;
 }

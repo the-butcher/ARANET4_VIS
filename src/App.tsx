@@ -5,6 +5,7 @@ import { IChartOptions, IRecord, ITimeSpan, ITimeSpanNamed, IUiProps } from "./c
 import UiComponent from "./components/UiComponent";
 import { StorageUtil } from "./util/StorageUtil";
 import { ThemeUtil } from "./util/ThemeUtil";
+import { TimeUtil } from "./util/TimeUtil";
 
 const App = () => {
 
@@ -18,20 +19,20 @@ const App = () => {
       },
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleMarkSpanUpdate,
+      handleTimeSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
 
   }
 
-  const handleMarkSpanUpdate = (timeSpan: ITimeSpanNamed) => {
+  const handleTimeSpanUpdate = (timeSpan: ITimeSpanNamed) => {
 
     console.debug('📞 handling time span', timeSpan);
 
     // find any existing timespan with that uuid
     const timeSpans = propsRef.current.timeSpans.filter(t => t.uuid !== timeSpan.uuid);
-    if (timeSpan.instantMin >= 0 && timeSpan.instantMax >= 0) {
+    if (timeSpan.instantMin !== Number.NEGATIVE_INFINITY && timeSpan.instantMax !== Number.NEGATIVE_INFINITY) {
       timeSpans.push(timeSpan);
     };
     timeSpans.sort((a, b) => a.instantMin - b.instantMin);
@@ -40,7 +41,7 @@ const App = () => {
       timeSpans: timeSpans,
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleMarkSpanUpdate,
+      handleTimeSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
@@ -61,14 +62,8 @@ const App = () => {
     const instantMinData = records[0].instant;
     const instantMaxData = records[records.length - 1].instant;
 
-    let instantMinUser = records[0].instant;
-    let instantMaxUser = records[records.length - 1].instant;
-
-    // if the user time span still overlaps with the data
-    if (propsRef.current.timeSpanUser.instantMin >= instantMinData && propsRef.current.timeSpanUser.instantMax <= instantMaxData) {
-      instantMinUser = propsRef.current.timeSpanUser.instantMin;
-      instantMaxUser = propsRef.current.timeSpanUser.instantMax;
-    }
+    let instantMaxUser = TimeUtil.toInstantMaxUser(records[records.length - 1].instant);
+    let instantMinUser = Math.max(TimeUtil.toInstantMinUser(records[records.length - 1].instant) - TimeUtil.MILLISECONDS_PER____DAY * 6, TimeUtil.toInstantMinUser(records[0].instant));
 
     propsRef.current = {
       ...propsRef.current,
@@ -84,7 +79,7 @@ const App = () => {
       },
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleMarkSpanUpdate,
+      handleTimeSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
@@ -100,7 +95,7 @@ const App = () => {
       timeSpanUser,
       handleRecordUpdate,
       handleTimeSpanUserUpdate,
-      handleMarkSpanUpdate,
+      handleTimeSpanUpdate,
       handleChartOptionsUpdate
     }
     setProps(propsRef.current);
@@ -124,11 +119,12 @@ const App = () => {
       showGradientFill: true,
       showGradientStroke: true,
       strokeWidth: 3,
-      fontSize: 20
+      fontSize: 20,
+      showDates: true
     },
     handleRecordUpdate,
     handleTimeSpanUserUpdate,
-    handleMarkSpanUpdate,
+    handleTimeSpanUpdate,
     handleChartOptionsUpdate
   });
   const [props, setProps] = useState<IUiProps>(propsRef.current);
@@ -150,7 +146,7 @@ const App = () => {
         timeSpans: timeSpans,
         handleRecordUpdate,
         handleTimeSpanUserUpdate,
-        handleMarkSpanUpdate,
+        handleTimeSpanUpdate,
         handleChartOptionsUpdate
       }
       setProps(propsRef.current);

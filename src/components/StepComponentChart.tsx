@@ -1,3 +1,6 @@
+import moment from 'moment';
+import 'moment/locale/de';
+
 import * as am4charts from "@amcharts/amcharts4/charts";
 import * as am4core from "@amcharts/amcharts4/core";
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
@@ -8,9 +11,15 @@ import { ColorUtil } from "../util/ColorUtil";
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
-import { INDICES_OF_DAYS, ITimeSpan, IUiProps } from "./IUiProps";
+import { DAYS_OF_WEEK, INDICES_OF_DAYS, IRecord, IUiProps } from "./IUiProps";
 
 const CHART_DIV_ID = 'chartdiv';
+interface IAxisAndSeries {
+    axis: am4charts.DateAxis,
+    series: am4charts.XYSeries
+}
+
+const DISPLAY_SPAN_DEFAULT_ID = ObjectUtil.createId();
 
 const StepComponentChart = (props: IUiProps) => {
 
@@ -48,7 +57,14 @@ const StepComponentChart = (props: IUiProps) => {
 
         console.debug(`⚙ updating chart component (timeSpanUserr, records, timeSpans)`, timeSpanUser, records, timeSpans);
 
+        const instantMinUser = timeSpanUser.instantMin;
+        const instantMaxUser = timeSpanUser.instantMax;
+        // console.log('instantMinUser', new Date(instantMinUser), 'instantMaxUser', new Date(instantMaxUser));
+
         chartRef.current = am4core.create(CHART_DIV_ID, am4charts.XYChart);
+        chartRef.current.bottomAxesContainer.layout = "horizontal";
+        chartRef.current.bottomAxesContainer.reverseOrder = true;
+
         chartRef.current.dateFormatter.dateFormat = "yyyy-MM-dd";
         chartRef.current.zoomOutButton.disabled = true;
         chartRef.current.exporting.adapter.add('filePrefix', (value, target) => {
@@ -57,47 +73,16 @@ const StepComponentChart = (props: IUiProps) => {
             };
         });
 
-        let title = chartRef.current.titles.create();
-        title.text = `${chartOptions.title} ${TimeUtil.formatCategoryDateFull(timeSpanUser.instantMin)} -> ${TimeUtil.formatCategoryDateFull(timeSpanUser.instantMax)} `;
+        const title = chartRef.current.titles.create();
+        if (chartOptions.showDates) {
+            title.text = `${chartOptions.title} ${TimeUtil.formatCategoryDateFull(instantMinUser)} -> ${TimeUtil.formatCategoryDateFull(instantMaxUser)}`;
+        } else {
+            title.text = `${chartOptions.title}`;
+        }
         title.fontFamily = fontFamily;
         title.fontSize = fontSize;
         title.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         title.marginBottom = 12 / window.devicePixelRatio;
-
-        let dateAxis = chartRef.current.xAxes.push(new am4charts.DateAxis());
-        // dateAxis.skipEmptyPeriods = true;
-
-        dateAxis.renderer.grid.template.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-        dateAxis.renderer.labels.template.visible = true;
-        dateAxis.renderer.labels.template.rotation = -90;
-        dateAxis.renderer.labels.template.verticalCenter = 'middle';
-        dateAxis.renderer.labels.template.fontFamily = fontFamily;
-        dateAxis.renderer.labels.template.fontSize = fontSize;
-        dateAxis.renderer.labels.template.paddingRight = 16 / window.devicePixelRatio;
-        dateAxis.renderer.labels.template.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-
-        dateAxis.gridIntervals.setAll([
-            { timeUnit: "minute", count: 15 },
-            { timeUnit: "hour", count: 1 },
-            { timeUnit: "hour", count: 3 },
-            { timeUnit: "hour", count: 6 },
-            { timeUnit: "day", count: 1 },
-            { timeUnit: "week", count: 1 }
-        ]);
-        dateAxis.baseInterval = { timeUnit: "minute", count: 1 };
-        dateAxis.dateFormatter = new am4core.DateFormatter();
-
-        dateAxis.dateFormats.setKey("hour", "HH:mm");
-        dateAxis.dateFormats.setKey("day", "dd.MM.yyyy");
-        dateAxis.tooltip!.label.rotation = -90;
-        dateAxis.tooltip!.label.horizontalCenter = 'right';
-        dateAxis.tooltip!.label.verticalCenter = 'middle';
-
-        dateAxis.tooltip!.background.fill = am4core.color(ThemeUtil.COLOR_CHART_BG);
-        dateAxis.tooltip!.background.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-        dateAxis.tooltip!.label.fontFamily = fontFamily;
-        dateAxis.tooltip!.label.fontSize = fontSize;
-        dateAxis.tooltip!.label.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
 
         const valueAxisCo2 = chartRef.current.yAxes.push(new am4charts.ValueAxis());
         valueAxisCo2.extraMax = 0.001;
@@ -117,8 +102,6 @@ const StepComponentChart = (props: IUiProps) => {
 
         valueAxisCo2.exportable = true;
         valueAxisCo2.min = 0;
-        // valueAxisCo2.max = 2000; // TODO :: configurable or by date
-        // valueAxisCo2.strictMinMax = true;
         valueAxisCo2.title.text = "CO₂ ppm";
         valueAxisCo2.title.fontFamily = fontFamily;
         valueAxisCo2.title.fontSize = fontSize;
@@ -126,136 +109,276 @@ const StepComponentChart = (props: IUiProps) => {
         valueAxisCo2.title.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         valueAxisCo2.tooltip!.disabled = true;
 
-        let seriesCo2 = chartRef.current.series.push(new am4charts.LineSeries());
-        seriesCo2.visible = true;
-        seriesCo2.name = '#';
-        seriesCo2.dataFields.dateX = "date";
-        seriesCo2.dataFields.valueY = "co2";
-        seriesCo2.yAxis = valueAxisCo2;
-
-        seriesCo2.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-        seriesCo2.strokeWidth = chartOptions.strokeWidth / window.devicePixelRatio;
-        seriesCo2.strokeLinecap = 'round';
-        seriesCo2.strokeLinejoin = 'round';
-        if (chartOptions.showGradientStroke) {
-            seriesCo2.propertyFields.stroke = 'color';
-        }
-
-        seriesCo2.adapter.add('tooltipText', (value, target) => {
-            const tooltipDataItemDataContext: any = target.tooltipDataItem.dataContext;
-            if (tooltipDataItemDataContext) {
-                const co2: number = tooltipDataItemDataContext['co2'];
-                return `${co2.toLocaleString()} ppm`;
-            } else {
-                return value;
-            }
-        });
-
-        seriesCo2.tooltipText = "{co2} ppm";
-        seriesCo2.tooltip!.getFillFromObject = false;
-        seriesCo2.tooltip!.getStrokeFromObject = false;
-        seriesCo2.tooltip!.background.fill = am4core.color(ThemeUtil.COLOR_CHART_BG);
-        seriesCo2.tooltip!.background.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-        seriesCo2.tooltip!.label.fontFamily = fontFamily;
-        seriesCo2.tooltip!.label.fontSize = fontSize;
-        seriesCo2.tooltip!.label.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
 
         chartRef.current.cursor = new am4charts.XYCursor();
-        chartRef.current.cursor.xAxis = dateAxis;
-        chartRef.current.cursor.showTooltipOn = 'always';
         chartRef.current.cursor.exportable = true;
         chartRef.current.cursor.lineX.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         chartRef.current.cursor.lineY.disabled = true;
         chartRef.current.cursor.behavior = 'none';
 
-        const midnightMin = TimeUtil.toMidnightInstant(timeSpanUser.instantMin);
-        const midnightMax = TimeUtil.toMidnightInstant(timeSpanUser.instantMax) + TimeUtil.MILLISECONDS_PER____DAY;
 
-        const dataRanges: ITimeSpan[] = [];
-        for (let midnight = midnightMin; midnight <= midnightMax; midnight += TimeUtil.MILLISECONDS_PER____DAY) {
+        // filter for display ranges and a create a default display range in case no display ranges have been defined yet
+        const timeSpansDisplay = timeSpans.filter(t => t.spanType === 'display');
+        if (timeSpansDisplay.length === 0) {
+            // console.log('adding default display range');
+            timeSpansDisplay.push({
+                uuid: DISPLAY_SPAN_DEFAULT_ID,
+                title: '',
+                instantMin: 0,
+                instantMax: 86399000, // Date and time (GMT): Thursday, 1. January 1970 23:59:59
+                spanType: 'display',
+                days: [
+                    ...DAYS_OF_WEEK
+                ]
+            })
+        }
 
-            timeSpans.filter(t => t.spanType === 'display').forEach(dispSpan => {
-                const instantMin = midnight + dispSpan.instantMin;
-                const instantMax = midnight + dispSpan.instantMax;
-                if (instantMax > timeSpanUser.instantMin && instantMin < timeSpanUser.instantMax) {
-                    const dayOfWeek = INDICES_OF_DAYS[new Date(instantMin).getDay()];
-                    if (dispSpan.days.find(d => d === dayOfWeek)) {
-                        dataRanges.push({
-                            instantMin,
-                            instantMax
+        const co2MaxLocals: number[] = [];
+        const axisAndSeriesArray: IAxisAndSeries[] = [];
+        const instantsDayUser: number[] = [];
+        for (let instantDayUser = instantMinUser; instantDayUser <= instantMaxUser; instantDayUser += TimeUtil.MILLISECONDS_PER____DAY) {
+            instantsDayUser.push(instantDayUser);
+        }
+        for (let instantDayUserIndex = 0; instantDayUserIndex < instantsDayUser.length; instantDayUserIndex++) {
+
+            const instantDayUser = instantsDayUser[instantDayUserIndex];
+
+            timeSpansDisplay.forEach(timeSpanDisplay => {
+
+                const instantMinDisplay = instantDayUser + timeSpanDisplay.instantMin;
+                const instantMaxDisplay = instantDayUser + timeSpanDisplay.instantMax;
+
+                // any overlap between display range and days selected?
+                if (instantMaxDisplay >= instantMinUser && instantMinDisplay <= instantMaxUser) {
+
+                    const dayOfWeek = INDICES_OF_DAYS[new Date(instantMinDisplay).getDay()];
+                    if (timeSpanDisplay.days.find(d => d === dayOfWeek)) {
+
+                        // console.log('display range', 'instantMinDisplay', new Date(instantMinDisplay), 'instantMaxDisplay', new Date(instantMaxDisplay));
+
+                        const extraHours = timeSpanDisplay.uuid === DISPLAY_SPAN_DEFAULT_ID ? 0 : 1;
+                        const dateAxis = chartRef.current!.xAxes.push(new am4charts.DateAxis());
+                        dateAxis.min = new Date(instantMinDisplay).getTime() - TimeUtil.MILLISECONDS_PER___HOUR * extraHours;
+                        dateAxis.max = new Date(instantMaxDisplay).getTime() + TimeUtil.MILLISECONDS_PER___HOUR * extraHours;
+                        dateAxis.strictMinMax = true;
+
+                        dateAxis.paddingTop = 0;
+                        dateAxis.paddingBottom = 0;
+                        dateAxis.paddingLeft = 0;
+                        dateAxis.paddingRight = 0;
+
+                        dateAxis.renderer.grid.template.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                        dateAxis.renderer.labels.template.visible = true;
+                        dateAxis.renderer.labels.template.rotation = -90;
+                        dateAxis.renderer.labels.template.verticalCenter = 'middle';
+                        dateAxis.renderer.labels.template.fontFamily = fontFamily;
+                        dateAxis.renderer.labels.template.fontSize = fontSize;
+                        dateAxis.renderer.labels.template.paddingRight = 16 / window.devicePixelRatio;
+                        dateAxis.renderer.labels.template.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                        dateAxis.renderer.labels.template.adapter.add('text', (value, target) => {
+                            if (target.dataItem.dates.date) {
+                                return moment(target.dataItem.dates.date).format('HH:mm');
+                            } else {
+                                return value;
+                            }
                         });
+
+                        dateAxis.gridIntervals.setAll([
+                            // { timeUnit: "minute", count: 15 },
+                            { timeUnit: "hour", count: 1 },
+                            { timeUnit: "hour", count: 3 },
+                            { timeUnit: "hour", count: 6 },
+                            // { timeUnit: "hour", count: 12 },
+                            // { timeUnit: "hour", count: 12 },
+                            // { timeUnit: "hour", count: 24 },
+                            // { timeUnit: "day", count: 1 },
+                            // { timeUnit: "week", count: 1 }
+                        ]);
+                        dateAxis.baseInterval = { timeUnit: "minute", count: 1 };
+
+                        // dateAxis.dateFormatter = new am4core.DateFormatter();
+
+                        dateAxis.dateFormats.setKey("hour", "HH:mm");
+                        dateAxis.dateFormats.setKey("day", "HH:mm");
+
+                        dateAxis.tooltip!.label.rotation = -90;
+                        dateAxis.tooltip!.label.horizontalCenter = 'right';
+                        dateAxis.tooltip!.label.verticalCenter = 'middle';
+
+                        dateAxis.tooltip!.background.fill = am4core.color(ThemeUtil.COLOR_CHART_BG);
+                        dateAxis.tooltip!.background.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                        dateAxis.tooltip!.label.fontFamily = fontFamily;
+                        dateAxis.tooltip!.label.fontSize = fontSize;
+                        dateAxis.tooltip!.label.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+
+                        const seriesCo2 = chartRef.current!.series.push(new am4charts.LineSeries());
+                        seriesCo2.visible = true;
+                        seriesCo2.name = '#';
+                        seriesCo2.xAxis = dateAxis;
+                        seriesCo2.yAxis = valueAxisCo2;
+                        seriesCo2.dataFields.dateX = "date";
+                        seriesCo2.dataFields.valueY = "co2";
+
+                        seriesCo2.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                        seriesCo2.strokeWidth = chartOptions.strokeWidth / window.devicePixelRatio;
+                        seriesCo2.strokeLinecap = 'round';
+                        seriesCo2.strokeLinejoin = 'round';
+                        if (chartOptions.showGradientStroke) {
+                            seriesCo2.propertyFields.stroke = 'color';
+                        }
+
+                        seriesCo2.adapter.add('tooltipText', (value, target) => {
+                            const tooltipDataItemDataContext: any = target.tooltipDataItem.dataContext;
+                            if (tooltipDataItemDataContext) {
+                                const co2: number = tooltipDataItemDataContext['co2'];
+                                const date: Date = tooltipDataItemDataContext['date'];
+                                if (chartOptions.showDates) {
+                                    return `${co2.toLocaleString()} ppm\n${moment(date).format('DD.MM.yyyy, HH:mm')}`;
+                                } else {
+                                    return `${co2.toLocaleString()} ppm`;
+                                }
+                            } else {
+                                return value;
+                            }
+                        });
+
+                        seriesCo2.tooltipText = "{co2} ppm";
+                        seriesCo2.tooltip!.getFillFromObject = false;
+                        seriesCo2.tooltip!.getStrokeFromObject = false;
+                        seriesCo2.tooltip!.background.fill = am4core.color(ThemeUtil.COLOR_CHART_BG);
+                        seriesCo2.tooltip!.background.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                        seriesCo2.tooltip!.label.fontFamily = fontFamily;
+                        seriesCo2.tooltip!.label.fontSize = fontSize;
+                        seriesCo2.tooltip!.label.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+
+                        axisAndSeriesArray.push({
+                            axis: dateAxis,
+                            series: seriesCo2
+                        });
+
+                        //
+
+                        // filter by time
+                        const filteredRecords: IRecord[] = [];
+                        records.forEach(r => {
+                            if (r.instant >= instantMinDisplay && r.instant <= instantMaxDisplay) {
+                                filteredRecords.push(r);
+                            } else {
+
+                            }
+                        })
+
+                        const chartData = filteredRecords.map(r => {
+                            return {
+                                date: new Date(r.instant),
+                                co2: r.co2,
+                                color: am4core.color(ColorUtil.getColorFromCo2(r.co2)),
+                                instant: r.instant
+                            }
+                        });
+                        co2MaxLocals.push(Math.max(...chartData.map(o => o.co2)));
+
+                        const createDateRange = (instant1: number, instant2: number, text: string, opacity: number, position: 'top' | 'bot') => {
+
+                            const axisRange = dateAxis.axisRanges.create();
+                            axisRange.value = new Date(instant1).getTime();
+                            axisRange.endValue = new Date(instant2).getTime();
+                            axisRange.label.inside = true;
+
+                            var pattern = new am4core.LinePattern();
+                            pattern.width = 7;
+                            pattern.height = 7;
+                            pattern.strokeWidth = 1;
+                            pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                            pattern.rotation = position === 'bot' ? 45 : -45;
+
+                            axisRange.axisFill.fill = pattern;
+                            axisRange.axisFill.fillOpacity = opacity;
+
+                            axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                            axisRange.axisFill.strokeOpacity = opacity;
+                            axisRange.grid.strokeOpacity = 0.0;
+
+                            if (instant1 === instant2) {
+                                axisRange.grid.strokeOpacity = opacity * 2; // left axis border
+                            }
+
+                            axisRange.label.visible = false;
+
+                            const axisRangeBullet = new am4charts.Bullet();
+                            const axisRangeLabel = axisRangeBullet.createChild(am4core.Label);
+                            axisRangeLabel.dy = -10 / window.devicePixelRatio;
+                            axisRangeLabel.rotation = -90;
+                            axisRangeLabel.text = text;
+                            axisRangeLabel.strokeOpacity = opacity;
+                            axisRangeLabel.fillOpacity = 1.00;
+                            axisRangeLabel.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                            axisRangeLabel.fontFamily = fontFamily;
+                            axisRangeLabel.fontSize = fontSize - 2;
+
+                            axisRangeBullet.adapter.add('x', (value, target) => {
+                                const axisEndPoint = dateAxis.dateToPoint(new Date(instant2));
+                                return axisEndPoint.x - fontSize * 1.5;
+                            });
+                            if (position === 'top') {
+                                axisRangeBullet.adapter.add('x', (value, target) => {
+                                    const axisEndPoint = dateAxis.dateToPoint(new Date(instant1));
+                                    return axisEndPoint.x;
+                                });
+                                axisRangeBullet.adapter.add('y', (value, target) => {
+                                    const axisEndPoint = valueAxisCo2.positionToCoordinate(1);
+                                    axisRangeLabel.measureElement();
+                                    return axisEndPoint + axisRangeLabel.measuredHeight + fontSize * 1.0;
+                                });
+                            } else {
+                                axisRangeBullet.adapter.add('x', (value, target) => {
+                                    const axisEndPoint = dateAxis.dateToPoint(new Date(instant2));
+                                    return axisEndPoint.x - fontSize * 1.5;
+                                });
+                            }
+
+                            axisRange.bullet = axisRangeBullet;
+
+                        }
+
+                        timeSpans.filter(t => t.spanType === 'markers').forEach(timeSpanMarkers => {
+
+                            if (timeSpanMarkers.days.find(d => d === dayOfWeek)) {
+
+                                const rangeMin = instantDayUser + timeSpanMarkers.instantMin;
+                                const rangeMax = instantDayUser + timeSpanMarkers.instantMax;
+                                if (rangeMin < instantMaxDisplay) {
+                                    createDateRange(rangeMin, rangeMax, timeSpanMarkers.title, 0.25, 'bot');
+                                }
+
+                            }
+
+                        });
+
+                        if (instantsDayUser.length <= 7) {
+                            createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${TimeUtil.formatCategoryDateFull(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top');
+                            // createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${new Date(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top');
+                        }
+
+                        // console.log('chartData', chartData);
+                        seriesCo2.data = chartData;
+
                     }
+
                 }
+
             });
 
         }
 
-        // filter by time
-        let filteredRecords = records.filter(r => {
-            return r.instant >= timeSpanUser.instantMin && r.instant <= timeSpanUser.instantMax && dataRanges.find(d => r.instant >= d.instantMin && r.instant <= d.instantMax);
+        chartRef.current.cursor.events.on('cursorpositionchanged', e => {
+            axisAndSeriesArray.forEach(axisAndSeries => {
+                const axisPosition = axisAndSeries.axis.toAxisPosition(e.target.xPosition);
+                const disabled = axisPosition < 0 || axisPosition > 1;
+                axisAndSeries.axis.tooltip!.disabled = disabled;
+                axisAndSeries.series.tooltip!.disabled = disabled;
+            })
         });
-        // remove every second entry until record count is manageable
-        while (filteredRecords.length > window.innerWidth) {
-            let count = 0;
-            filteredRecords = filteredRecords.filter(r => count++ % 2 === 0);
-        }
-        // add colors
-        const chartData = filteredRecords.map(r => {
-            return {
-                date: new Date(r.instant),
-                co2: r.co2,
-                color: am4core.color(ColorUtil.getColorFromCo2(r.co2))
-            }
-        });
-        const co2Max = Math.max(...chartData.map(o => o.co2));
-
-        const createDateRange = (instant1: number, instant2: number, text: string, opacity: number) => {
-
-            const axisRange = dateAxis.axisRanges.create();
-            axisRange.value = instant1;
-            axisRange.endValue = instant2;
-            axisRange.label.inside = true;
-
-            var pattern = new am4core.LinePattern();
-            pattern.width = 7;
-            pattern.height = 7;
-            pattern.strokeWidth = 1;
-            pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-            pattern.rotation = 45;
-
-            axisRange.axisFill.fill = pattern;
-            axisRange.axisFill.fillOpacity = opacity;
-            // axisRange.axisFill.fill = am4core.color('#999999');
-
-            axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-            axisRange.axisFill.strokeOpacity = opacity;
-            axisRange.grid.strokeOpacity = 0.0;
-
-            if (instant1 === instant2) {
-                axisRange.grid.strokeOpacity = opacity * 2; // left axis border
-            }
-
-            axisRange.label.visible = false;
-
-            const axisRangeBullet = new am4charts.Bullet();
-            const axisRangeLabel = axisRangeBullet.createChild(am4core.Label);
-            axisRangeLabel.dy = -10 / window.devicePixelRatio;
-            axisRangeLabel.rotation = -90;
-            axisRangeLabel.text = text;
-            axisRangeLabel.strokeOpacity = opacity;
-            axisRangeLabel.fillOpacity = 1.00;
-            axisRangeLabel.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-            axisRangeLabel.fontFamily = fontFamily;
-            axisRangeLabel.fontSize = fontSize;
-
-            axisRangeBullet.adapter.add('x', (value, target) => {
-                const axisEndPoint = dateAxis.dateToPoint(new Date(instant2));
-                return axisEndPoint.x - fontSize * 1.5;
-            });
-
-            axisRange.bullet = axisRangeBullet;
-
-        }
 
         const createValueRange = (value1: number, value2: number, text: string, patternColor: string) => {
 
@@ -286,28 +409,15 @@ const StepComponentChart = (props: IUiProps) => {
 
         }
 
+
+        const co2MaxGlobal = Math.max(...co2MaxLocals);
         if (chartOptions.showGradientFill) {
-            for (let co2 = 0; co2 <= co2Max + 600; co2 += 100) {
+            for (let co2 = 0; co2 <= co2MaxGlobal + 600; co2 += 100) {
                 createValueRange(co2, co2 + 100, '', ColorUtil.getColorFromCo2(co2 + 50));
             }
         }
 
 
-        for (let midnight = midnightMin; midnight <= midnightMax; midnight += TimeUtil.MILLISECONDS_PER____DAY) {
-
-            timeSpans.filter(t => t.spanType === 'markers').forEach(markSpan => {
-
-                const rangeMin = midnight + markSpan.instantMin;
-                const rangeMax = midnight + markSpan.instantMax;
-                if (rangeMin < timeSpanUser.instantMax && dataRanges.find(d => rangeMax >= d.instantMin && rangeMin <= d.instantMax)) {
-                    createDateRange(rangeMin, rangeMax, markSpan.title, 0.20);
-                }
-
-            });
-
-        }
-
-        seriesCo2.data = chartData;
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timeSpanUser, records, timeSpans, chartOptions]);
