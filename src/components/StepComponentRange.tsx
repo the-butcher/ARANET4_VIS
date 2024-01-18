@@ -1,8 +1,7 @@
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import GradientIcon from '@mui/icons-material/Gradient';
+import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import RedoIcon from '@mui/icons-material/Redo';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -17,7 +16,7 @@ import { ObjectUtil } from '../util/ObjectUtil';
 import { ThemeUtil } from '../util/ThemeUtil';
 import { TimeUtil } from '../util/TimeUtil';
 import DividerComponent from './DividerComponent';
-import { DAYS_OF_WEEK, DAY_OF_WEEK, ITimeSpanNamed, IUiProps, SPAN_TYPE } from './IUiProps';
+import { DAYS_OF_WEEK, DAY_OF_WEEK, ITimeSpanNamed, IUiProps, PATT_TYPE, SPAN_TYPE } from './IUiProps';
 import TimeSpanComponent from './TimeSpanComponent';
 
 let timeSpanUpdateTimeout = -1;
@@ -47,7 +46,8 @@ const StepComponentRange = (props: IUiProps) => {
         days: [
             ...DAYS_OF_WEEK
         ],
-        spanType: activeTabName
+        spanType: activeTabName,
+        pattType: activeTabName === 'display' ? 'HL' : 'BW'
     });
 
     const handleChartTitleUpdate = (title: string) => {
@@ -174,6 +174,34 @@ const StepComponentRange = (props: IUiProps) => {
         }
     }
 
+    const handleTimeSpanPattToggle = (uuid: string) => {
+        if (uuid === timeSpanNew.uuid) {
+            setTimeSpanNew({
+                ...timeSpanNew,
+                pattType: nextPattType(timeSpanNew.pattType)
+            });
+        } else {
+            const formSpan = formSpans.find(t => t.uuid === uuid);
+            if (formSpan) {
+                const _formSpan: ITimeSpanNamed = {
+                    ...formSpan,
+                    pattType: nextPattType(formSpan.pattType)
+                };
+                handleFormSpanUpdate(_formSpan);
+            }
+        }
+    }
+
+    const nextPattType = (patt: PATT_TYPE): PATT_TYPE => {
+        if (patt === 'FW') {
+            return 'BW';
+        } else if (patt === 'BW') {
+            return 'HL';
+        } else {
+            return 'FW';
+        }
+    }
+
     const handleFormSpanUpdate = (_formSpan: ITimeSpanNamed) => {
 
         const _formSpans = formSpans.filter(t => t.uuid !== _formSpan.uuid);
@@ -221,7 +249,8 @@ const StepComponentRange = (props: IUiProps) => {
             days: [
                 ...DAYS_OF_WEEK
             ],
-            spanType: activeTabName
+            spanType: activeTabName,
+            pattType: activeTabName === 'display' ? 'HL' : 'FW'
         });
         setFormSpans(timeSpans.filter(s => s.spanType === activeTabName));
 
@@ -304,6 +333,7 @@ const StepComponentRange = (props: IUiProps) => {
                                     handleTimeSpanMinChanged={handleTimeSpanMinChanged}
                                     handleTimeSpanMaxChanged={handleTimeSpanMaxChanged}
                                     handleTimeSpanDaysChanged={handleTimeSpanDaysChanged}
+                                    handleTimeSpanPattToggle={handleTimeSpanPattToggle}
                                 />
                                 <IconButton
                                     aria-label='delete chart marker'
@@ -338,6 +368,7 @@ const StepComponentRange = (props: IUiProps) => {
                     handleTimeSpanMinChanged={handleTimeSpanMinChanged}
                     handleTimeSpanMaxChanged={handleTimeSpanMaxChanged}
                     handleTimeSpanDaysChanged={handleTimeSpanDaysChanged}
+                    handleTimeSpanPattToggle={handleTimeSpanPattToggle}
                 />
                 <IconButton
                     aria-label='create chart marker'

@@ -11,7 +11,7 @@ import { ColorUtil } from "../util/ColorUtil";
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
-import { DAYS_OF_WEEK, INDICES_OF_DAYS, IRecord, IUiProps } from "./IUiProps";
+import { DAYS_OF_WEEK, INDICES_OF_DAYS, IRecord, IUiProps, PATT_TYPE } from "./IUiProps";
 
 const CHART_DIV_ID = 'chartdiv';
 interface IAxisAndSeries {
@@ -127,6 +127,7 @@ const StepComponentChart = (props: IUiProps) => {
                 instantMin: 0,
                 instantMax: 86399000, // Date and time (GMT): Thursday, 1. January 1970 23:59:59
                 spanType: 'display',
+                pattType: 'HL',
                 days: [
                     ...DAYS_OF_WEEK
                 ]
@@ -177,11 +178,17 @@ const StepComponentChart = (props: IUiProps) => {
                         dateAxis.renderer.labels.template.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
                         dateAxis.renderer.labels.template.adapter.add('text', (value, target) => {
                             if (target.dataItem.dates.date) {
-                                return moment(target.dataItem.dates.date).format('HH:mm');
+                                const date = target.dataItem.dates.date;
+                                if (date.getTime() >= instantMinDisplay && date.getTime() <= instantMaxDisplay) {
+                                    return moment(target.dataItem.dates.date).format('HH:mm');
+                                } else {
+                                    return '';
+                                }
                             } else {
                                 return value;
                             }
                         });
+                        dateAxis.renderer.minGridDistance = 12;
 
                         dateAxis.gridIntervals.setAll([
                             // { timeUnit: "minute", count: 15 },
@@ -278,22 +285,26 @@ const StepComponentChart = (props: IUiProps) => {
                         });
                         co2MaxLocals.push(Math.max(...chartData.map(o => o.co2)));
 
-                        const createDateRange = (instant1: number, instant2: number, text: string, opacity: number, position: 'top' | 'bot') => {
+                        const createDateRange = (instant1: number, instant2: number, text: string, opacity: number, position: 'top' | 'bot', patt: PATT_TYPE) => {
 
                             const axisRange = dateAxis.axisRanges.create();
                             axisRange.value = new Date(instant1).getTime();
                             axisRange.endValue = new Date(instant2).getTime();
                             axisRange.label.inside = true;
 
-                            var pattern = new am4core.LinePattern();
-                            pattern.width = 7;
-                            pattern.height = 7;
-                            pattern.strokeWidth = 1;
-                            pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-                            pattern.rotation = position === 'bot' ? 45 : -45;
+                            if (patt !== 'HL') {
+                                var pattern = new am4core.LinePattern();
+                                pattern.width = 7;
+                                pattern.height = 7;
+                                pattern.strokeWidth = 1;
+                                pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+                                pattern.rotation = patt === 'FW' ? -45 : 45;
+                                axisRange.axisFill.fill = pattern;
+                                axisRange.axisFill.fillOpacity = opacity;
+                            } else {
+                                axisRange.axisFill.fillOpacity = 0.0;
+                            }
 
-                            axisRange.axisFill.fill = pattern;
-                            axisRange.axisFill.fillOpacity = opacity;
 
                             axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
                             axisRange.axisFill.strokeOpacity = opacity;
@@ -333,7 +344,7 @@ const StepComponentChart = (props: IUiProps) => {
                             } else {
                                 axisRangeBullet.adapter.add('x', (value, target) => {
                                     const axisEndPoint = dateAxis.dateToPoint(new Date(instant2));
-                                    return axisEndPoint.x - fontSize * 1.5;
+                                    return axisEndPoint.x - fontSize * 1.25;
                                 });
                             }
 
@@ -348,7 +359,7 @@ const StepComponentChart = (props: IUiProps) => {
                                 const rangeMin = instantDayUser + timeSpanMarkers.instantMin;
                                 const rangeMax = instantDayUser + timeSpanMarkers.instantMax;
                                 if (rangeMin < instantMaxDisplay) {
-                                    createDateRange(rangeMin, rangeMax, timeSpanMarkers.title, 0.25, 'bot');
+                                    createDateRange(rangeMin, rangeMax, timeSpanMarkers.title, 0.25, 'bot', timeSpanMarkers.pattType);
                                 }
 
                             }
@@ -356,8 +367,7 @@ const StepComponentChart = (props: IUiProps) => {
                         });
 
                         if (instantsDayUser.length <= 7) {
-                            createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${TimeUtil.formatCategoryDateFull(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top');
-                            // createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${new Date(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top');
+                            createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${TimeUtil.formatCategoryDateFull(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top', timeSpanDisplay.pattType);
                         }
 
                         // console.log('chartData', chartData);

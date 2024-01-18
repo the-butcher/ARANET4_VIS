@@ -1,9 +1,12 @@
-import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, TextField } from '@mui/material';
+import { Avatar, Checkbox, FormControl, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, TextField } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers';
 import moment from 'moment';
 import 'moment/locale/de';
 import { TimeUtil } from '../util/TimeUtil';
 import { DAYS_OF_WEEK, DAY_OF_WEEK, ITimeSpanNamed } from './IUiProps';
+import TextureIcon from '@mui/icons-material/Texture';
+import CropSquareIcon from '@mui/icons-material/CropSquare';
+import { ThemeUtil } from '../util/ThemeUtil';
 
 export interface ITimeSpanProperties {
     timeSpan: ITimeSpanNamed;
@@ -11,11 +14,12 @@ export interface ITimeSpanProperties {
     handleTimeSpanMinChanged: (uuid: string, value: moment.Moment | null) => void;
     handleTimeSpanMaxChanged: (uuid: string, value: moment.Moment | null) => void;
     handleTimeSpanDaysChanged: (uuid: string, days: DAY_OF_WEEK[]) => void;
+    handleTimeSpanPattToggle: (uuid: string) => void;
 }
 
 const TimeSpanComponent = (props: ITimeSpanProperties) => {
 
-    const { timeSpan, handleTimeSpanTitleChanged, handleTimeSpanMinChanged, handleTimeSpanMaxChanged, handleTimeSpanDaysChanged } = { ...props };
+    const { timeSpan, handleTimeSpanTitleChanged, handleTimeSpanMinChanged, handleTimeSpanMaxChanged, handleTimeSpanDaysChanged, handleTimeSpanPattToggle } = { ...props };
 
     return (
 
@@ -68,6 +72,21 @@ const TimeSpanComponent = (props: ITimeSpanProperties) => {
                     ))}
                 </Select>
             </FormControl>
+            <IconButton
+                aria-label={'toggle pattern type'}
+                title={'toggle pattern type'}
+                size="large"
+                onClick={e => handleTimeSpanPattToggle(timeSpan.uuid)}
+            >
+                <Avatar
+                    sx={{ width: 30, height: 30, bgcolor: true ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                >
+                    {
+                        timeSpan.pattType === 'HL' ? <CropSquareIcon sx={{ width: 20, height: 20 }} /> : <TextureIcon sx={{ width: 20, height: 20, rotate: timeSpan.pattType === 'BW' ? '90deg' : '0deg' }} />
+                    }
+
+                </Avatar>
+            </IconButton>
         </>
 
     );

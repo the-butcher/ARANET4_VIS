@@ -18,6 +18,8 @@ export const INDICES_OF_DAYS: DAY_OF_WEEK[] = [
     'SAT'
 ];
 
+export type PATT_TYPE = 'FW' | 'BW' | 'HL';
+
 export type SPAN_TYPE = 'display' | 'markers';
 
 export interface IRecord {
@@ -35,6 +37,7 @@ export interface ITimeSpanNamed extends ITimeSpan {
     title: string;
     days: DAY_OF_WEEK[];
     spanType: SPAN_TYPE;
+    pattType: PATT_TYPE;
 }
 
 export interface IChartOptions {

@@ -140,6 +140,11 @@ const App = () => {
     if (loadedProps) {
       const timeSpans = loadedProps.timeSpans;
       timeSpans.sort((a, b) => a.instantMin - b.instantMin);
+      timeSpans.forEach(timeSpan => {
+        if (!timeSpan.pattType) {
+          timeSpan.pattType = timeSpan.spanType === 'display' ? 'HL' : 'FW'
+        }
+      })
       propsRef.current = loadedProps;
       propsRef.current = {
         ...loadedProps,
