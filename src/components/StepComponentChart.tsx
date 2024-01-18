@@ -55,7 +55,7 @@ const StepComponentChart = (props: IUiProps) => {
 
 
         const co2Step = (chartOptions.maxColorVal - chartOptions.minColorVal) / chartOptions.stpColorVal;
-        const interpolatorH = new InterpolatedValue(0.33, -0.05, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
+        const interpolatorH = new InterpolatedValue(0.33, -0.025, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
         const interpolatorS = new InterpolatedValue(1.00, 1.00, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
         const interpolatorV = new InterpolatedValue(0.80, 1.000, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
 
@@ -304,7 +304,7 @@ const StepComponentChart = (props: IUiProps) => {
                             axisRange.label.inside = true;
 
                             axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-                            if (patt !== 'HL') {
+                            if (patt !== 'HL') { // other than hollow
 
                                 var pattern = new am4core.LinePattern();
                                 pattern.width = 7;
@@ -320,6 +320,7 @@ const StepComponentChart = (props: IUiProps) => {
                             } else {
                                 axisRange.axisFill.fillOpacity = 0.0;
                                 axisRange.axisFill.strokeOpacity = opacity * 2;
+                                axisRange.axisFill.strokeWidth = chartOptions.strokeWidth / 2;
                             }
                             axisRange.grid.strokeOpacity = 0.0;
 
@@ -458,7 +459,15 @@ const StepComponentChart = (props: IUiProps) => {
         }
 
         if (chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke)) {
+
             let legend = new am4charts.Legend();
+
+            legend.markers.template.width = fontSize * 2;
+            legend.markers.template.height = fontSize;
+            legend.markers.template.marginRight = fontSize / 2;
+            legend.labels.template.fontFamily = fontFamily;
+            legend.labels.template.fontSize = fontSize;
+
             legend.parent = chartRef.current.chartContainer;
             legend.data = legendData;
         }
