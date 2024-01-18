@@ -1,5 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import GradientIcon from '@mui/icons-material/Gradient';
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import RedoIcon from '@mui/icons-material/Redo';
@@ -239,7 +240,7 @@ const StepComponentRange = (props: IUiProps) => {
 
     useEffect(() => {
 
-        console.debug(`⚙ updating ranges component (timeSpans, activeTabName)`, timeSpans, activeTabName);
+        console.debug(`⚙ updating ranges component (timeSpans, chartOptions, activeTabName)`, timeSpans, chartOptions, activeTabName);
 
         setTimeSpanNew({
             uuid: ObjectUtil.createId(),
@@ -253,9 +254,10 @@ const StepComponentRange = (props: IUiProps) => {
             pattType: activeTabName === 'display' ? 'HL' : 'FW'
         });
         setFormSpans(timeSpans.filter(s => s.spanType === activeTabName));
+        setFormTitle(chartOptions.title);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [timeSpans, activeTabName]);
+    }, [timeSpans, chartOptions, activeTabName]);
 
     useEffect(() => {
 
@@ -267,7 +269,7 @@ const StepComponentRange = (props: IUiProps) => {
     return (
         <LocalizationProvider dateAdapter={AdapterMoment}>
             <DividerComponent />
-            <Typography sx={{ paddingRight: '10px', marginBottom: '6px' }}>You can now specify the displayed date/time range with the 'min' and 'max' date pickers. It is also possible to create chart markers, i.e. to indicate a daily timetable.</Typography>
+            <Typography sx={{ paddingRight: '10px', marginBottom: '6px' }}>You can now specify the displayed date/time range with the 'min (incl)' and 'max (incl)' date pickers, then further limit the data to be included by adding display ranges. It is also possible to create marker ranges, i.e. to indicate a daily timetable.</Typography>
             <DividerComponent title='chart display range' />
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: '46px' }}>
                 <DatePicker
@@ -390,6 +392,7 @@ const StepComponentRange = (props: IUiProps) => {
                     variant="outlined"
                     value={formTitle}
                     onChange={e => handleChartTitleUpdate(e.target.value)}
+                    sx={{ margin: '6px', width: '220px' }}
                 />
                 <FormControl
                     sx={{ width: '106px!important' }}
@@ -436,6 +439,98 @@ const StepComponentRange = (props: IUiProps) => {
                         <MenuItem value={32}>32</MenuItem>
                     </Select>
                 </FormControl>
+
+                <IconButton
+                    aria-label={chartOptions.showDates ? 'hide dates' : 'show dates'}
+                    title={chartOptions.showDates ? 'hide dates' : 'show dates'}
+                    size="large"
+                    onClick={e => handleChartOptionsUpdate({
+                        showDates: !chartOptions.showDates
+                    })}
+                >
+                    <Avatar
+                        sx={{ width: 33, height: 30, bgcolor: chartOptions.showDates ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                    >
+                        <EventAvailableIcon sx={{ width: 20, height: 20 }} />
+                    </Avatar>
+                </IconButton>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+                <FormControl
+                    sx={{ width: '106px!important' }}
+                >
+                    <InputLabel id="demo-simple-select-autowidth-label">green</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-autowidth-label"
+                        id="demo-simple-select-autowidth"
+                        onChange={e => handleChartOptionsUpdate({
+                            minColorVal: e.target.value as number
+                        })}
+                        autoWidth
+                        label="green"
+                        sx={{ width: '106px!important' }}
+                        value={chartOptions.minColorVal}
+                    >
+                        {
+                            [400, 500, 600, 700, 800, 900, 1000].map(value => <MenuItem value={value}>{`${value}ppm`}</MenuItem>)
+                        }
+                    </Select>
+                </FormControl>
+                <FormControl
+                    sx={{ width: '106px!important' }}
+                >
+                    <InputLabel id="demo-simple-select-autowidth-label">steps</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-autowidth-label"
+                        id="demo-simple-select-autowidth"
+                        value={chartOptions.stpColorVal}
+                        onChange={e => handleChartOptionsUpdate({
+                            stpColorVal: e.target.value as number
+                        })}
+                        autoWidth
+                        label="steps"
+                        sx={{ width: '106px!important' }}
+                    >
+                        {
+                            [2, 3, 4, 5, 6, 8, 10].map(value => <MenuItem value={value}>{`${value}`}</MenuItem>)
+                        }
+                    </Select>
+                </FormControl>
+                <FormControl
+                    sx={{ width: '106px!important' }}
+                >
+                    <InputLabel id="demo-simple-select-autowidth-label">red</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-autowidth-label"
+                        id="demo-simple-select-autowidth"
+                        onChange={e => handleChartOptionsUpdate({
+                            maxColorVal: e.target.value as number
+                        })}
+                        autoWidth
+                        label="red"
+                        sx={{ width: '106px!important' }}
+                        value={chartOptions.maxColorVal}
+                    >
+                        {
+                            [1000, 1100, 1200, 1300, 1400, 1500, 1600].map(value => <MenuItem value={value}>{`${value}ppm`}</MenuItem>)
+                        }
+                    </Select>
+                </FormControl>
+                <IconButton
+                    disabled={!chartOptions.showGradientFill && !chartOptions.showGradientStroke}
+                    aria-label={chartOptions.showLegend ? 'hide legend' : 'show legend'}
+                    title={chartOptions.showLegend ? 'hide legend' : 'show legend'}
+                    size="large"
+                    onClick={e => handleChartOptionsUpdate({
+                        showLegend: !chartOptions.showLegend
+                    })}
+                >
+                    <Avatar
+                        sx={{ width: 33, height: 30, bgcolor: chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke) ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                    >
+                        <MoreHorizIcon sx={{ width: 20, height: 20 }} />
+                    </Avatar>
+                </IconButton>
                 <IconButton
                     aria-label={chartOptions.showGradientFill ? 'hide chart gradient' : 'show chart gradient'}
                     title={chartOptions.showGradientFill ? 'hide chart gradient' : 'show chart gradient'}
@@ -445,7 +540,7 @@ const StepComponentRange = (props: IUiProps) => {
                     })}
                 >
                     <Avatar
-                        sx={{ width: 30, height: 30, bgcolor: chartOptions.showGradientFill ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                        sx={{ width: 33, height: 30, bgcolor: chartOptions.showGradientFill ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
                     >
                         <GradientIcon sx={{ width: 20, height: 20 }} />
                     </Avatar>
@@ -459,23 +554,9 @@ const StepComponentRange = (props: IUiProps) => {
                     })}
                 >
                     <Avatar
-                        sx={{ width: 30, height: 30, bgcolor: chartOptions.showGradientStroke ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                        sx={{ width: 33, height: 30, bgcolor: chartOptions.showGradientStroke ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
                     >
                         <ShowChartIcon sx={{ width: 20, height: 20 }} />
-                    </Avatar>
-                </IconButton>
-                <IconButton
-                    aria-label={chartOptions.showDates ? 'hide dates' : 'show dates'}
-                    title={chartOptions.showDates ? 'hide dates' : 'show dates'}
-                    size="large"
-                    onClick={e => handleChartOptionsUpdate({
-                        showDates: !chartOptions.showDates
-                    })}
-                >
-                    <Avatar
-                        sx={{ width: 30, height: 30, bgcolor: chartOptions.showDates ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
-                    >
-                        <EventAvailableIcon sx={{ width: 20, height: 20 }} />
                     </Avatar>
                 </IconButton>
             </div>

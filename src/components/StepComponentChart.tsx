@@ -7,7 +7,8 @@ import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 
 import { Fab } from "@mui/material";
 import { useEffect, useRef } from "react";
-import { ColorUtil } from "../util/ColorUtil";
+import { Color } from '../util/Color';
+import { InterpolatedValue } from '../util/InterpolatedValue';
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
@@ -50,6 +51,16 @@ const StepComponentChart = (props: IUiProps) => {
 
         if (chartRef.current) {
             chartRef.current.dispose();
+        }
+
+
+        const co2Step = (chartOptions.maxColorVal - chartOptions.minColorVal) / chartOptions.stpColorVal;
+        const interpolatorH = new InterpolatedValue(0.33, -0.05, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
+        const interpolatorS = new InterpolatedValue(1.00, 1.00, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
+        const interpolatorV = new InterpolatedValue(0.80, 1.000, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
+
+        const getColorFromCo2 = (co2: number): string => {
+            return new Color(interpolatorH.getOut(co2), interpolatorS.getOut(co2), interpolatorV.getOut(co2) * 0.90).getHex();
         }
 
         const fontSize = chartOptions.fontSize / devicePixelRatio;
@@ -279,7 +290,7 @@ const StepComponentChart = (props: IUiProps) => {
                             return {
                                 date: new Date(r.instant),
                                 co2: r.co2,
-                                color: am4core.color(ColorUtil.getColorFromCo2(r.co2)),
+                                color: am4core.color(getColorFromCo2(r.co2)),
                                 instant: r.instant
                             }
                         });
@@ -292,23 +303,26 @@ const StepComponentChart = (props: IUiProps) => {
                             axisRange.endValue = new Date(instant2).getTime();
                             axisRange.label.inside = true;
 
+                            axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
                             if (patt !== 'HL') {
+
                                 var pattern = new am4core.LinePattern();
                                 pattern.width = 7;
                                 pattern.height = 7;
                                 pattern.strokeWidth = 1;
                                 pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
                                 pattern.rotation = patt === 'FW' ? -45 : 45;
+
                                 axisRange.axisFill.fill = pattern;
                                 axisRange.axisFill.fillOpacity = opacity;
+                                axisRange.axisFill.strokeOpacity = opacity;
+
                             } else {
                                 axisRange.axisFill.fillOpacity = 0.0;
+                                axisRange.axisFill.strokeOpacity = opacity * 2;
                             }
-
-
-                            axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-                            axisRange.axisFill.strokeOpacity = opacity;
                             axisRange.grid.strokeOpacity = 0.0;
+
 
                             if (instant1 === instant2) {
                                 axisRange.grid.strokeOpacity = opacity * 2; // left axis border
@@ -419,12 +433,34 @@ const StepComponentChart = (props: IUiProps) => {
 
         }
 
-
+        const legendData = [];
         const co2MaxGlobal = Math.max(...co2MaxLocals);
-        if (chartOptions.showGradientFill) {
-            for (let co2 = 0; co2 <= co2MaxGlobal + 600; co2 += 100) {
-                createValueRange(co2, co2 + 100, '', ColorUtil.getColorFromCo2(co2 + 50));
+
+        let co2Last = 0;
+        for (let co2Curr = chartOptions.minColorVal; co2Curr <= chartOptions.maxColorVal; co2Curr += co2Step) {
+            const fill = getColorFromCo2(co2Curr);
+            if (chartOptions.showGradientFill) {
+                createValueRange(co2Last, co2Curr, '', fill);
             }
+            co2Last = co2Curr;
+            legendData.push({
+                name: `${co2Curr.toLocaleString()}ppm`,
+                fill
+            });
+            if (co2Curr >= chartOptions.maxColorVal) {
+
+                break;
+            }
+        }
+        if (chartOptions.showGradientFill) {
+            const fill = getColorFromCo2(co2MaxGlobal + 600);
+            createValueRange(chartOptions.maxColorVal, co2MaxGlobal + 600, '', fill);
+        }
+
+        if (chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke)) {
+            let legend = new am4charts.Legend();
+            legend.parent = chartRef.current.chartContainer;
+            legend.data = legendData;
         }
 
 

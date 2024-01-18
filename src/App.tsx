@@ -118,9 +118,13 @@ const App = () => {
       title: 'CO₂ Measurements',
       showGradientFill: true,
       showGradientStroke: true,
+      showLegend: true,
       strokeWidth: 3,
       fontSize: 20,
-      showDates: true
+      showDates: true,
+      minColorVal: 400,
+      maxColorVal: 1400,
+      stpColorVal: 10
     },
     handleRecordUpdate,
     handleTimeSpanUserUpdate,
@@ -144,7 +148,16 @@ const App = () => {
         if (!timeSpan.pattType) {
           timeSpan.pattType = timeSpan.spanType === 'display' ? 'HL' : 'FW'
         }
-      })
+      });
+      if (!loadedProps.chartOptions.minColorVal) {
+        loadedProps.chartOptions.minColorVal = 400;
+      }
+      if (!loadedProps.chartOptions.maxColorVal) {
+        loadedProps.chartOptions.maxColorVal = 1400;
+      }
+      if (!loadedProps.chartOptions.stpColorVal) {
+        loadedProps.chartOptions.stpColorVal = 10;
+      }
       propsRef.current = loadedProps;
       propsRef.current = {
         ...loadedProps,

@@ -79,7 +79,7 @@ const TimeSpanComponent = (props: ITimeSpanProperties) => {
                 onClick={e => handleTimeSpanPattToggle(timeSpan.uuid)}
             >
                 <Avatar
-                    sx={{ width: 30, height: 30, bgcolor: true ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
+                    sx={{ width: 33, height: 30, bgcolor: true ? ThemeUtil.COLOR_PRIMARY : ThemeUtil.COLOR_SECONDARY }}
                 >
                     {
                         timeSpan.pattType === 'HL' ? <CropSquareIcon sx={{ width: 20, height: 20 }} /> : <TextureIcon sx={{ width: 20, height: 20, rotate: timeSpan.pattType === 'BW' ? '90deg' : '0deg' }} />

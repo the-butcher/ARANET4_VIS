@@ -1,5 +1,4 @@
 import { Color } from "./Color";
-import { InterpolatedValue } from "./InterpolatedValue";
 
 /**
  * utility type for parsing / providing / converting colors between rgb and hsv
@@ -11,15 +10,6 @@ export class ColorUtil {
 
     //initial tile color
     static readonly tileHsv: number[] = [0.27, 1, 0.75];
-
-    static INTERPOLATOR_CO2_HUE = new InterpolatedValue(0.33, -0.05, 400, 1400, 1.0);
-    static INTERPOLATOR_CO2_SAT = new InterpolatedValue(1.00, 0.800, 400, 1400, 1.0);
-    static INTERPOLATOR_CO2_VAL = new InterpolatedValue(0.80, 1.000, 400, 1400, 1.0);
-
-    static getColorFromCo2(co2: number): string {
-        return new Color(this.INTERPOLATOR_CO2_HUE.getOut(co2), this.INTERPOLATOR_CO2_SAT.getOut(co2), this.INTERPOLATOR_CO2_VAL.getOut(co2)).getHex();
-    }
-
 
     /**
      * parses a hex string in the format '#RRGGBB'

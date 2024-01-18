@@ -44,9 +44,13 @@ export interface IChartOptions {
     title: string;
     showGradientFill: boolean;
     showGradientStroke: boolean;
+    showLegend: boolean;
     strokeWidth: number;
     fontSize: number;
     showDates: boolean;
+    minColorVal: number;
+    maxColorVal: number;
+    stpColorVal: number;
 }
 
 export interface IUiProps {
