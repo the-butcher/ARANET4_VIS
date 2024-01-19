@@ -472,7 +472,7 @@ const StepComponentRange = (props: IUiProps) => {
                         value={chartOptions.minColorVal}
                     >
                         {
-                            [400, 500, 600, 700, 800, 900, 1000].map(value => <MenuItem value={value}>{`${value}ppm`}</MenuItem>)
+                            [400, 500, 600, 700, 800, 900, 1000].map(value => <MenuItem key={`green_${value}`} value={value}>{`${value}ppm`}</MenuItem>)
                         }
                     </Select>
                 </FormControl>
@@ -492,7 +492,7 @@ const StepComponentRange = (props: IUiProps) => {
                         sx={{ width: '106px!important' }}
                     >
                         {
-                            [2, 3, 4, 5, 6, 8, 10].map(value => <MenuItem value={value}>{`${value}`}</MenuItem>)
+                            [2, 3, 4, 5, 6, 8, 10].map(value => <MenuItem key={`steps_${value}`} value={value}>{`${value}`}</MenuItem>)
                         }
                     </Select>
                 </FormControl>
@@ -512,7 +512,7 @@ const StepComponentRange = (props: IUiProps) => {
                         value={chartOptions.maxColorVal}
                     >
                         {
-                            [1000, 1100, 1200, 1300, 1400, 1500, 1600].map(value => <MenuItem value={value}>{`${value}ppm`}</MenuItem>)
+                            [1000, 1100, 1200, 1300, 1400, 1500, 1600].map(value => <MenuItem key={`red_${value}`} value={value}>{`${value}ppm`}</MenuItem>)
                         }
                     </Select>
                 </FormControl>

@@ -1,19 +1,26 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Paper, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { PROFILE_DEFS } from '../App';
+import { StorageUtil } from '../util/StorageUtil';
 import { ThemeUtil } from '../util/ThemeUtil';
 import { TimeUtil } from '../util/TimeUtil';
+import { IProfileProps } from './IProfileProps';
 import { IUiProps } from './IUiProps';
 import StepComponentChart from './StepComponentChart';
 import StepComponentFile from './StepComponentFile';
 import StepComponentRange from './StepComponentRange';
 
+
 const PANEL_ID___FILE = 'panel_id___file';
 const PANEL_ID_RANGES = 'panel_id_ranges';
 
-const UiComponent = (props: IUiProps) => {
 
-    const { name, timeSpanUser, timeSpans } = { ...props };
+
+
+const UiComponent = (props: IUiProps & IProfileProps) => {
+
+    const { name, timeSpanUser, timeSpans, profileId, handleProfileIdUpdate } = { ...props };
 
     const [spanTitle, setSpanTitle] = useState<string>('');
 
@@ -27,10 +34,15 @@ const UiComponent = (props: IUiProps) => {
             setPanelIds([
                 ...panelIds,
                 panelId
-            ])
+            ]);
         } else {
             setPanelIds(panelIds.filter(p => p !== panelId));
         }
+    }
+
+    const handleProfileChange = (event: React.SyntheticEvent, _profileId: number) => {
+        event.stopPropagation();
+        handleProfileIdUpdate(_profileId);
     }
 
     useEffect(() => {
@@ -42,6 +54,12 @@ const UiComponent = (props: IUiProps) => {
         console.debug(`⚙ updating ui component (name)`, name);
         if (name && name !== '') {
             setPanelIds(panelIds.filter(p => p !== PANEL_ID___FILE)); // close the file accordion after a file change
+        } else {
+            // no file name => file panel must show
+            setPanelIds([
+                ...panelIds.filter(p => p !== PANEL_ID___FILE),
+                PANEL_ID___FILE
+            ]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [name]);
@@ -69,14 +87,35 @@ const UiComponent = (props: IUiProps) => {
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1-content"
                     id="panel1-header"
-                    sx={{ backgroundColor: ThemeUtil.COLOR_ACCORDION_BG }}
+                    sx={{ backgroundColor: ThemeUtil.COLOR_ACCORDION_BG, height: '42px' }}
                 >
-                    <Typography>
-                        IMPORT ARANET4 CSV DATA
-                        {
-                            props.name ? <span style={{ fontSize: '0.8rem' }}> :: {props.name}</span> : null
-                        }
-                    </Typography>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexGrow: '10', borderBottom: 1, borderColor: 'divider' }}>
+                        <Typography
+
+                        >
+                            IMPORT CO₂ SENSOR DATA
+                        </Typography>
+                        <div style={{ width: '50px' }}></div>
+                        <Tabs
+                            value={profileId}
+                            onChange={handleProfileChange}
+                            aria-label="icon tabs example"
+                            sx={{ padding: '0px', margin: '0px', minHeight: 'unset!important', flexGrow: '10' }}
+
+                        > {
+                                PROFILE_DEFS.map((value, index) =>
+                                    <Tab
+                                        key={`PROFILE_${index}`}
+                                        // label={`${index}`}
+                                        aria-label={`PROFILE ${index}`}
+
+                                        sx={{ padding: '0px', margin: '0px' }}
+                                        icon={StorageUtil.hasProps(value.sProp) ? value.icon1 : value.icon0}
+                                    />
+                                )
+                            }
+                        </Tabs>
+                    </div>
                 </AccordionSummary>
                 <AccordionDetails>
                     <Stack>
@@ -89,10 +128,14 @@ const UiComponent = (props: IUiProps) => {
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel2-content"
                     id="panel2-header"
-                    sx={{ backgroundColor: ThemeUtil.COLOR_ACCORDION_BG }}
+                    sx={{ backgroundColor: ThemeUtil.COLOR_ACCORDION_BG, height: '42px' }}
                 >
                     <Typography>
-                        SPECIFY DATA RANGES <span style={{ fontSize: '0.8rem' }}>{spanTitle}</span>
+                        SPECIFY DATA RANGES
+                        {
+                            props.name ? <span style={{ fontSize: '0.8rem' }}> :: {props.name}, ({props.type})</span> : null
+                        }
+                        <span style={{ fontSize: '0.8rem' }}>{spanTitle}</span>
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails>

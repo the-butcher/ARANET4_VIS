@@ -1,12 +1,11 @@
 import styled from "@emotion/styled";
-import IosShareIcon from '@mui/icons-material/IosShare';
 import { Snackbar, Typography } from "@mui/material";
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { forwardRef, useEffect, useState } from "react";
-import { useDropzone } from 'react-dropzone';
-import { AranetUtil } from "../util/AranetUtil";
+import { FileRejection, useDropzone } from 'react-dropzone';
+import { FileParser } from "../data/FileParser";
 import DividerComponent from "./DividerComponent";
 import { IUiProps } from "./IUiProps";
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
 
 const getColor = (props: any) => {
     if (props.isDragAccept) {
@@ -51,6 +50,8 @@ const StepComponentFile = (props: IUiProps) => {
     const [errorDisplay, setErrorDisplay] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
 
+    const accept: { [K: string]: [] } = {}
+    FileParser.INSTANCE.getAcceptableMimeTypes().forEach(m => accept[m] = []);
     const {
         getRootProps,
         getInputProps,
@@ -58,8 +59,9 @@ const StepComponentFile = (props: IUiProps) => {
         isDragAccept,
         isDragReject
     } = useDropzone({
-        accept: { 'text/csv': [] },
-        onDrop: files => acceptFile(files[files.length - 1])
+        accept,
+        onDrop: files => acceptFile(files[files.length - 1]),
+        onDropRejected: files => rejctFile(files[files.length - 1]),
     });
 
     useEffect(() => {
@@ -67,30 +69,30 @@ const StepComponentFile = (props: IUiProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const rejctFile = (rejection: FileRejection) => {
+        console.warn('rejection', rejection);
+        setErrorMessage(`file was rejected`);
+        setErrorDisplay(true);
+    }
+
     const acceptFile = (file: File) => {
 
         // @ts-ignore
-        // var file = e.target.files[0];
         if (!file) {
             console.warn('no file');
             return;
         }
 
-        var reader = new FileReader();
-        reader.onload = e => {
-
-            // @ts-ignore
-            const text = e.target.result as string;
-            try {
-                const records = AranetUtil.parseFile(text);
-                handleRecordUpdate(file.name, records);
-            } catch (e: any) {
-                console.error('failed to load csv file', e);
-                setErrorMessage(e.message);
-                setErrorDisplay(true);
-            }
-        }
-        reader.readAsText(file);
+        FileParser.INSTANCE.parseFile(file).then(records => {
+            handleRecordUpdate({
+                ...records,
+                name: file.name
+            });
+        }).catch(e => {
+            console.warn(e);
+            setErrorMessage(e.message);
+            setErrorDisplay(true);
+        });
 
     }
 
@@ -110,17 +112,24 @@ const StepComponentFile = (props: IUiProps) => {
             </Snackbar>
             <DividerComponent />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography>
-                    <span>Please start by exporting CSV data from your Aranet4 device. Find and press the export icon </span>
-                    <span><IosShareIcon sx={{ width: '24px', height: '24px', paddingTop: '6px' }} /></span>
-                    <span> in your Aranet App. Export the CSV file to a location of your choice, then import the CSV file here using the button below.</span>
+                <Typography component={'div'}>
+                    <div>Please start by exporting CSV or XlSX data from your CO₂ device to a location of your choice. Then import the CSV or XLSX file here using the button below.</div>
+                    <div>
+                        <br />
+                        Currently there is support for:
+                        <ul>
+                            <li>Aranet CSV.</li>
+                            <li>Inkbird CSV (experimental).</li>
+                            <li>Smartair (qingping) XSLX (experimental).</li>
+                        </ul>
+                    </div>
                 </Typography>
             </div>
             <DividerComponent />
             <div className="container">
                 <Container {...getRootProps({ isFocused, isDragAccept, isDragReject })}>
                     <input {...getInputProps()} />
-                    <p>drop CSV file here, or click to select files</p>
+                    <p>drop CSV or XSLX file here, or click to select files</p>
                 </Container>
             </div>
         </>

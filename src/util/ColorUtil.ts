@@ -16,7 +16,6 @@ export class ColorUtil {
      * @param hex
      */
     static parseHex(hex: string): Color {
-        //console.log('hex', hex);
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         console.log('result', result);
         var rgb: number[] = [];

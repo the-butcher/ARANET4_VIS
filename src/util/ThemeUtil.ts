@@ -6,7 +6,7 @@ export class ThemeUtil {
     static COLOR_CHART_FONT = '#000000';
     static COLOR_CHART_BG = '#ffffff';
     static COLOR_PRIMARY = '#1976d2';
-    static COLOR_SECONDARY = '#cccccc';
+    static COLOR_SECONDARY = '#aaaaaa';
 
     static getTheme(): Theme {
 
@@ -15,12 +15,21 @@ export class ThemeUtil {
             palette: {
                 mode: 'light',
                 secondary: {
-                    main: '#cccccc',
-                    light: '#cccccc',
+                    main: '#aaaaaa',
+                    light: '#aaaaaa',
                 }
             },
             components: {
 
+                MuiAccordionSummary: {
+                    styleOverrides: {
+                        root: {
+                            '&.Mui-expanded': {
+                                minHeight: '48px'
+                            }
+                        }
+                    }
+                },
                 MuiCollapse: {
                     styleOverrides: {
                         wrapperInner: {

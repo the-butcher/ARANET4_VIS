@@ -1,3 +1,8 @@
+export interface IDateParser {
+    parseDate: (d: string) => Date;
+}
+export type DATE_FORMATS = "dd/mm/yyyy" | "mm/dd/yyyy";
+
 /**
  * utility class for managing time related units
  *
@@ -5,6 +10,21 @@
  * @since 25.05.2021
  */
 export class TimeUtil {
+
+    static readonly DATE_PARSERS: { [K in DATE_FORMATS]: IDateParser } = {
+        "dd/mm/yyyy": {
+            parseDate: d => {
+                const values = d.split(/[/:. ]/g).map(t => parseInt(t));
+                return new Date(values[2], values[1] - 1, values[0], values[3], values[4], values[5]);
+            }
+        },
+        "mm/dd/yyyy": {
+            parseDate: d => {
+                const values = d.split(/[/:. ]/g).map(t => parseInt(t));
+                return new Date(values[2], values[0] - 1, values[1], values[3], values[4], values[5]);
+            }
+        }
+    }
 
     static readonly MILLISECONDS_PER_MINUTE = 60 * 1000;
     static readonly MILLISECONDS_PER___HOUR = 60 * TimeUtil.MILLISECONDS_PER_MINUTE;

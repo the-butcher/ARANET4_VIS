@@ -17,3 +17,30 @@ test('to max instant', () => {
     expect(TimeUtil.toInstantMaxUser(time)).toBe(expc);
 
 });
+
+test('it has the correct date parsers', () => {
+
+    expect(TimeUtil.DATE_PARSERS).toHaveProperty("dd/mm/yyyy");
+    expect(TimeUtil.DATE_PARSERS).toHaveProperty("mm/dd/yyyy");
+
+});
+
+test('it parses dates correctly', () => {
+
+    expect(TimeUtil.DATE_PARSERS["dd/mm/yyyy"].parseDate('01/08/2024 19:03:48').getFullYear()).toBe(2024);
+    expect(TimeUtil.DATE_PARSERS["dd/mm/yyyy"].parseDate('01/08/2024 19:03:48').getMonth()).toBe(7);
+    expect(TimeUtil.DATE_PARSERS["dd/mm/yyyy"].parseDate('01/08/2024 19:03:48').getDate()).toBe(1);
+    expect(TimeUtil.DATE_PARSERS["dd/mm/yyyy"].parseDate('01/08/2024 19:03:48').getHours()).toBe(19);
+    expect(TimeUtil.DATE_PARSERS["dd/mm/yyyy"].parseDate('01/08/2024 19:03:48').getMinutes()).toBe(3);
+    expect(TimeUtil.DATE_PARSERS["dd/mm/yyyy"].parseDate('01/08/2024 19:03:48').getSeconds()).toBe(48);
+
+    expect(TimeUtil.DATE_PARSERS["mm/dd/yyyy"].parseDate('01/08/2024 19:03:48').getFullYear()).toBe(2024);
+    expect(TimeUtil.DATE_PARSERS["mm/dd/yyyy"].parseDate('01/08/2024 19:03:48').getMonth()).toBe(0);
+    expect(TimeUtil.DATE_PARSERS["mm/dd/yyyy"].parseDate('01/08/2024 19:03:48').getDate()).toBe(8);
+    expect(TimeUtil.DATE_PARSERS["mm/dd/yyyy"].parseDate('01/08/2024 19:03:48').getHours()).toBe(19);
+    expect(TimeUtil.DATE_PARSERS["mm/dd/yyyy"].parseDate('01/08/2024 19:03:48').getMinutes()).toBe(3);
+    expect(TimeUtil.DATE_PARSERS["mm/dd/yyyy"].parseDate('01/08/2024 19:03:48').getSeconds()).toBe(48);
+
+
+});
+

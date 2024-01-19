@@ -8,20 +8,30 @@ import { IUiProps } from "../components/IUiProps";
  */
 export class StorageUtil {
 
-    static readonly STORAGE_KEY_UI_PROPS = 'UI_PROPS_4';
+    // static readonly STORAGE_KEY_UI_PROPS = 'UI_PROPS_4';
     static STORAGE_ENABLED: boolean = false;
 
-    static storeUiProps(props: IUiProps): void {
+    static storeUiProps(key: string, props: IUiProps): void {
         if (this.isStorageEnabled()) {
-            localStorage.setItem(StorageUtil.STORAGE_KEY_UI_PROPS, JSON.stringify(props));
+            localStorage.setItem(key, JSON.stringify(props));
         }
     }
 
-    static loadProps(): IUiProps | undefined {
+    static hasProps(key: string): boolean {
+        if (this.isStorageEnabled()) {
+            const loadedPropsRaw = localStorage.getItem(key);
+            if (loadedPropsRaw) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static loadProps(key: string): IUiProps | undefined {
 
         if (this.isStorageEnabled()) {
 
-            const loadedPropsRaw = localStorage.getItem(StorageUtil.STORAGE_KEY_UI_PROPS);
+            const loadedPropsRaw = localStorage.getItem(key);
             if (loadedPropsRaw) {
                 const loadedProps = JSON.parse(loadedPropsRaw) as IUiProps;
                 return loadedProps;

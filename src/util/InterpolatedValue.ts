@@ -1,6 +1,4 @@
-// import { IInterpolatedValue } from "./IInterpolatedValue";
-
-export class InterpolatedValue /* implements IInterpolatedValue */ {
+export class InterpolatedValue {
 
     private readonly outMin: number;
     private readonly outMax: number;

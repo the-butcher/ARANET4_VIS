@@ -19,8 +19,8 @@ export const INDICES_OF_DAYS: DAY_OF_WEEK[] = [
 ];
 
 export type PATT_TYPE = 'FW' | 'BW' | 'HL';
-
 export type SPAN_TYPE = 'display' | 'markers';
+export type FILE_TYPE = 'Aranet4' | 'SmartAir' | 'Inkbird' | 'Unknown';
 
 export interface IRecord {
     instant: number;
@@ -55,12 +55,13 @@ export interface IChartOptions {
 
 export interface IUiProps {
     name: string;
+    type: FILE_TYPE;
     records: IRecord[];
     timeSpanData: ITimeSpan;
     timeSpanUser: ITimeSpan;
     timeSpans: ITimeSpanNamed[],
     chartOptions: IChartOptions,
-    handleRecordUpdate: (name: string, records: IRecord[]) => void;
+    handleRecordUpdate: (updates: Pick<IUiProps, 'name' | 'type' | 'records'>) => void;
     handleTimeSpanUserUpdate: (timeSpanUser: ITimeSpan) => void;
     handleTimeSpanUpdate: (timeSpan: ITimeSpanNamed) => void;
     handleChartOptionsUpdate: (update: Partial<IChartOptions>) => void;
