@@ -1,11 +1,17 @@
 import styled from "@emotion/styled";
-import { Snackbar, Typography } from "@mui/material";
+import RedoIcon from '@mui/icons-material/Redo';
+import UndoIcon from '@mui/icons-material/Undo';
+import { IconButton, Snackbar, Typography } from "@mui/material";
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import { DatePicker } from "@mui/x-date-pickers";
+import moment from 'moment';
 import { forwardRef, useEffect, useState } from "react";
 import { FileRejection, useDropzone } from 'react-dropzone';
 import { FileParser } from "../data/FileParser";
+import { TimeUtil } from "../util/TimeUtil";
 import DividerComponent from "./DividerComponent";
-import { IUiProps } from "./IUiProps";
+import { IDataProps } from "./IUiProps";
+import StepComponentChartOverview from "./StepComponentChartOverview";
 
 const getColor = (props: any) => {
     if (props.isDragAccept) {
@@ -43,9 +49,9 @@ const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const StepComponentFile = (props: IUiProps) => {
+const StepComponentFile = (props: IDataProps) => {
 
-    const { handleRecordUpdate } = { ...props };
+    const { timeSpanData, timeSpanUser, handleTimeSpanUserUpdate, handleRecordUpdate } = { ...props };
 
     const [errorDisplay, setErrorDisplay] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
@@ -63,6 +69,41 @@ const StepComponentFile = (props: IUiProps) => {
         onDrop: files => acceptFile(files[files.length - 1]),
         onDropRejected: files => rejctFile(files[files.length - 1]),
     });
+
+    const handleDateUserMinChanged = (value: moment.Moment | null) => {
+        if (value) {
+            handleTimeSpanUserUpdate({
+                ...timeSpanUser,
+                instantMin: TimeUtil.toInstantMinUser(value.unix() * 1000)
+            })
+        }
+    }
+
+    const handleDateUserMaxChanged = (value: moment.Moment | null) => {
+        if (value) {
+            handleTimeSpanUserUpdate({
+                ...timeSpanUser,
+                instantMax: TimeUtil.toInstantMaxUser(value.unix() * 1000)
+            })
+        }
+    }
+
+    const handleDateUserMove = (value: number) => {
+        if (value) {
+            handleTimeSpanUserUpdate({
+                ...timeSpanUser,
+                instantMin: timeSpanUser.instantMin + value,
+                instantMax: timeSpanUser.instantMax + value
+            })
+        }
+    }
+
+    useEffect(() => {
+
+        console.debug(`⚙ updating ranges component (timeSpanData, timeSpanUser)`, timeSpanData, timeSpanUser);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [timeSpanData, timeSpanUser]);
 
     useEffect(() => {
         console.debug('✨ building file picker component');
@@ -110,7 +151,6 @@ const StepComponentFile = (props: IUiProps) => {
                     {errorMessage}
                 </Alert>
             </Snackbar>
-            <DividerComponent />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography component={'div'}>
                     <div>Please start by exporting CSV or XlSX data from your CO₂ device to a location of your choice. Then import the CSV or XLSX file here using the button below.</div>
@@ -132,6 +172,49 @@ const StepComponentFile = (props: IUiProps) => {
                     <p>drop CSV or XSLX file here, or click to select files</p>
                 </Container>
             </div>
+            <DividerComponent />
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: '46px' }}>
+                <DatePicker
+                    sx={{ margin: '6px', width: '220px' }}
+                    label="min (incl)"
+                    value={moment(new Date(timeSpanUser.instantMin))}
+                    minDate={moment(new Date(timeSpanData.instantMin))}
+                    maxDate={moment(new Date(timeSpanUser.instantMax))}
+                    onChange={handleDateUserMinChanged}
+                />
+                <DatePicker
+                    sx={{ margin: '6px', width: '220px' }}
+                    label="max (incl)"
+                    value={moment(new Date(timeSpanUser.instantMax))}
+                    minDate={moment(new Date(timeSpanUser.instantMin))}
+                    maxDate={moment(new Date(timeSpanData.instantMax))}
+                    onChange={handleDateUserMaxChanged}
+                />
+                <IconButton
+                    disabled={timeSpanUser.instantMin <= timeSpanData.instantMin}
+                    aria-label='1 day back'
+                    title='1 day back'
+                    size="large"
+                    onClick={() => handleDateUserMove(-TimeUtil.MILLISECONDS_PER____DAY)}
+                    sx={{ width: '54px', height: '54px' }}
+                >
+                    <UndoIcon />
+                </IconButton>
+                <IconButton
+                    disabled={timeSpanUser.instantMax >= timeSpanData.instantMax}
+                    aria-label='1 day forward'
+                    title='1 day forward'
+                    size="large"
+                    onClick={() => handleDateUserMove(TimeUtil.MILLISECONDS_PER____DAY)}
+                    sx={{ width: '54px', height: '54px' }}
+                >
+                    <RedoIcon />
+                </IconButton>
+            </div>
+            <div style={{ height: '10px' }} />
+            {
+                props.records.length > 0 ? <StepComponentChartOverview{...props} /> : null
+            }
         </>
     );
 

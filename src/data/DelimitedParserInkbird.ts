@@ -1,4 +1,4 @@
-import { IRecord, IUiProps } from "../components/IUiProps";
+import { IDataProps, IRecord } from "../components/IUiProps";
 import { TimeUtil } from "../util/TimeUtil";
 import { IDelimitedParser } from "./IDelimitedParser";
 
@@ -15,7 +15,7 @@ export class DelimitedParserInkbird implements IDelimitedParser {
         return headers.indexOf(DelimitedParserInkbird.HEADER_NAME_TIME) === 0 && headers.indexOf(DelimitedParserInkbird.HEADER_NAME__CO2) === 1;
     }
 
-    parseLines(lines: string[]): Promise<Pick<IUiProps, 'type' | 'records'>> {
+    parseLines(lines: string[]): Promise<Pick<IDataProps, 'type' | 'records'>> {
         return new Promise((resolve, reject) => {
 
             const dateParser = TimeUtil.DATE_PARSERS["mm/dd/yyyy"]

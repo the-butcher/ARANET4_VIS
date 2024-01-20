@@ -1,4 +1,4 @@
-import { IRecord, IUiProps } from "../components/IUiProps";
+import { IDataProps, IRecord } from "../components/IUiProps";
 import { IWorksheetParser } from "./IWorksheetParser";
 
 /**
@@ -13,7 +13,7 @@ export class WorksheetParserSmartAir implements IWorksheetParser {
         return headers.indexOf(WorksheetParserSmartAir.HEADER_NAME_TIME) >= 0 && headers.indexOf(WorksheetParserSmartAir.HEADER_NAME__CO2) >= 0;
     }
 
-    async parseData(data: any[][]): Promise<Pick<IUiProps, 'type' | 'records'>> {
+    async parseData(data: any[][]): Promise<Pick<IDataProps, 'type' | 'records'>> {
         const headers = data[0];
         const headerIndexTime = headers.indexOf(WorksheetParserSmartAir.HEADER_NAME_TIME);
         const headerIndexCo2 = headers.indexOf(WorksheetParserSmartAir.HEADER_NAME__CO2);

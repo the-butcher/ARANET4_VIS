@@ -12,9 +12,9 @@ import { InterpolatedValue } from '../util/InterpolatedValue';
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
-import { DAYS_OF_WEEK, INDICES_OF_DAYS, IRecord, IUiProps, PATT_TYPE } from "./IUiProps";
+import { DAYS_OF_WEEK, IDataProps, INDICES_OF_DAYS, IRecord, IUiProps, PATT_TYPE } from "./IUiProps";
 
-const CHART_DIV_ID = 'chartdiv';
+const CHART_DIV_ID_OVERVIEW = 'chartdivoverview';
 interface IAxisAndSeries {
     axis: am4charts.DateAxis,
     series: am4charts.XYSeries
@@ -22,7 +22,7 @@ interface IAxisAndSeries {
 
 const DISPLAY_SPAN_DEFAULT_ID = ObjectUtil.createId();
 
-const StepComponentChart = (props: IUiProps) => {
+const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
     const { timeSpanUser, records, timeSpans, chartOptions } = { ...props };
 
@@ -53,8 +53,8 @@ const StepComponentChart = (props: IUiProps) => {
             chartRef.current.dispose();
         }
 
-
         const co2Step = (chartOptions.maxColorVal - chartOptions.minColorVal) / chartOptions.stpColorVal;
+
         const interpolatorH = new InterpolatedValue(0.33, -0.025, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
         const interpolatorS = new InterpolatedValue(1.00, 1.00, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
         const interpolatorV = new InterpolatedValue(0.80, 1.000, chartOptions.minColorVal, chartOptions.maxColorVal + co2Step, 1.0);
@@ -70,9 +70,8 @@ const StepComponentChart = (props: IUiProps) => {
 
         const instantMinUser = timeSpanUser.instantMin;
         const instantMaxUser = timeSpanUser.instantMax;
-        // console.log('instantMinUser', new Date(instantMinUser), 'instantMaxUser', new Date(instantMaxUser));
 
-        chartRef.current = am4core.create(CHART_DIV_ID, am4charts.XYChart);
+        chartRef.current = am4core.create(CHART_DIV_ID_OVERVIEW, am4charts.XYChart);
         chartRef.current.bottomAxesContainer.layout = "horizontal";
         chartRef.current.bottomAxesContainer.reverseOrder = true;
 
@@ -131,7 +130,6 @@ const StepComponentChart = (props: IUiProps) => {
         // filter for display ranges and a create a default display range in case no display ranges have been defined yet
         const timeSpansDisplay = timeSpans.filter(t => t.spanType === 'display');
         if (timeSpansDisplay.length === 0) {
-            // console.log('adding default display range');
             timeSpansDisplay.push({
                 uuid: DISPLAY_SPAN_DEFAULT_ID,
                 title: '',
@@ -165,8 +163,6 @@ const StepComponentChart = (props: IUiProps) => {
 
                     const dayOfWeek = INDICES_OF_DAYS[new Date(instantMinDisplay).getDay()];
                     if (timeSpanDisplay.days.find(d => d === dayOfWeek)) {
-
-                        // console.log('display range', 'instantMinDisplay', new Date(instantMinDisplay), 'instantMaxDisplay', new Date(instantMaxDisplay));
 
                         const extraHours = timeSpanDisplay.uuid === DISPLAY_SPAN_DEFAULT_ID ? 0 : 1;
                         const dateAxis = chartRef.current!.xAxes.push(new am4charts.DateAxis());
@@ -385,7 +381,6 @@ const StepComponentChart = (props: IUiProps) => {
                             createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${TimeUtil.formatCategoryDateFull(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top', timeSpanDisplay.pattType);
                         }
 
-                        // console.log('chartData', chartData);
                         seriesCo2.data = chartData;
 
                     }
@@ -434,28 +429,33 @@ const StepComponentChart = (props: IUiProps) => {
 
         }
 
-        const legendData = [];
+        const legendData: any[] = [];
         const co2MaxGlobal = Math.max(...co2MaxLocals);
+        let fill: string;
 
-        let co2Last = 0;
-        for (let co2Curr = chartOptions.minColorVal; co2Curr <= chartOptions.maxColorVal; co2Curr += co2Step) {
-            const fill = getColorFromCo2(co2Curr);
-            if (chartOptions.showGradientFill) {
-                createValueRange(co2Last, co2Curr, '', fill);
-            }
-            co2Last = co2Curr;
+        if (chartOptions.showGradientFill) {
+            fill = getColorFromCo2(chartOptions.minColorVal);
             legendData.push({
-                name: `${co2Curr.toLocaleString()}ppm`,
+                name: `${Math.round(chartOptions.minColorVal).toLocaleString()}ppm`,
                 fill
             });
-            if (co2Curr >= chartOptions.maxColorVal) {
-
-                break;
+            createValueRange(0, chartOptions.minColorVal, '', fill);
+        }
+        for (let i = 0; i < chartOptions.stpColorVal; i++) {
+            const co2A = chartOptions.minColorVal + i * co2Step;
+            const co2B = chartOptions.minColorVal + (i + 1) * co2Step;
+            if (chartOptions.showGradientFill) {
+                fill = getColorFromCo2(co2B);
+                legendData.push({
+                    name: `${Math.round(co2B).toLocaleString()}ppm`,
+                    fill
+                });
+                createValueRange(co2A, co2B, '', fill);
             }
         }
         if (chartOptions.showGradientFill) {
-            const fill = getColorFromCo2(co2MaxGlobal + 600);
-            createValueRange(chartOptions.maxColorVal, co2MaxGlobal + 600, '', fill);
+            fill = getColorFromCo2(co2MaxGlobal + 1000);
+            createValueRange(chartOptions.maxColorVal, co2MaxGlobal + 1000, '', fill);
         }
 
         if (chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke)) {
@@ -480,7 +480,7 @@ const StepComponentChart = (props: IUiProps) => {
     return (
         <>
             <div>
-                <div id={CHART_DIV_ID} style={{
+                <div id={CHART_DIV_ID_OVERVIEW} style={{
                     width: '100%',
                     height: '50vw',
                     flexGrow: '1'
@@ -506,4 +506,4 @@ const StepComponentChart = (props: IUiProps) => {
 
 }
 
-export default StepComponentChart;
+export default StepComponentChartDetail;

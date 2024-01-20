@@ -1,5 +1,5 @@
 import xlsx from 'node-xlsx';
-import { IUiProps } from "../components/IUiProps";
+import { IDataProps } from "../components/IUiProps";
 import { IFileParser } from "./IFileParser";
 import { WorksheetParserSmartAir } from "./WorksheetParserSmartAir";
 
@@ -24,7 +24,7 @@ export class FileParserXlsx implements IFileParser {
         this.worksheetParserSmartAir = new WorksheetParserSmartAir();
     }
 
-    async parseFile(file: File): Promise<Pick<IUiProps, 'type' | 'records'>> {
+    async parseFile(file: File): Promise<Pick<IDataProps, 'type' | 'records'>> {
         return new Promise((resolve, reject) => {
             var reader = new FileReader();
             reader.onload = e => {

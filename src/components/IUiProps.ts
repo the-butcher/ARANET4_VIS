@@ -51,18 +51,21 @@ export interface IChartOptions {
     minColorVal: number;
     maxColorVal: number;
     stpColorVal: number;
+    handleChartOptionsUpdate: (update: Partial<IChartOptions>) => void;
 }
 
-export interface IUiProps {
+export interface IDataProps {
     name: string;
     type: FILE_TYPE;
     records: IRecord[];
     timeSpanData: ITimeSpan;
     timeSpanUser: ITimeSpan;
+    handleRecordUpdate: (updates: Pick<IDataProps, 'name' | 'type' | 'records'>) => void;
+    handleTimeSpanUserUpdate: (timeSpanUser: ITimeSpan) => void;
+}
+
+export interface IUiProps {
     timeSpans: ITimeSpanNamed[],
     chartOptions: IChartOptions,
-    handleRecordUpdate: (updates: Pick<IUiProps, 'name' | 'type' | 'records'>) => void;
-    handleTimeSpanUserUpdate: (timeSpanUser: ITimeSpan) => void;
     handleTimeSpanUpdate: (timeSpan: ITimeSpanNamed) => void;
-    handleChartOptionsUpdate: (update: Partial<IChartOptions>) => void;
 }

@@ -1,21 +1,22 @@
 import { ThemeProvider } from "@emotion/react";
 import { CssBaseline } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { IChartOptions, ITimeSpan, ITimeSpanNamed, IUiProps } from "./components/IUiProps";
+import { IProfileDef, IProfileProps } from "./components/IProfileProps";
+import { IChartOptions, IDataProps, ITimeSpan, ITimeSpanNamed, IUiProps } from "./components/IUiProps";
 import UiComponent from "./components/UiComponent";
 import { StorageUtil } from "./util/StorageUtil";
 import { ThemeUtil } from "./util/ThemeUtil";
 import { TimeUtil } from "./util/TimeUtil";
-import { IProfileDef, IProfileProps } from "./components/IProfileProps";
 
-import Filter1TwoToneIcon from '@mui/icons-material/Filter1TwoTone';
 import Filter1Icon from '@mui/icons-material/Filter1';
+import Filter1TwoToneIcon from '@mui/icons-material/Filter1TwoTone';
 
-import Filter2TwoToneIcon from '@mui/icons-material/Filter2TwoTone';
 import Filter2Icon from '@mui/icons-material/Filter2';
+import Filter2TwoToneIcon from '@mui/icons-material/Filter2TwoTone';
 
-import Filter3TwoToneIcon from '@mui/icons-material/Filter3TwoTone';
 import Filter3Icon from '@mui/icons-material/Filter3';
+import Filter3TwoToneIcon from '@mui/icons-material/Filter3TwoTone';
+import { ObjectUtil } from "./util/ObjectUtil";
 
 export const PROFILE_DEFS: IProfileDef[] = [
   {
@@ -43,12 +44,10 @@ const App = () => {
       ...uiPropsRef.current,
       chartOptions: {
         ...uiPropsRef.current.chartOptions,
-        ...update
+        ...update,
+        handleChartOptionsUpdate
       },
-      handleRecordUpdate,
-      handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
-      handleChartOptionsUpdate
+      handleTimeSpanUpdate
     }
     setUiProps(uiPropsRef.current);
 
@@ -67,10 +66,11 @@ const App = () => {
     uiPropsRef.current = {
       ...uiPropsRef.current,
       timeSpans: timeSpans,
-      handleRecordUpdate,
-      handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
-      handleChartOptionsUpdate
+      chartOptions: {
+        ...uiPropsRef.current.chartOptions,
+        handleChartOptionsUpdate
+      },
+      handleTimeSpanUpdate
     }
     setUiProps(uiPropsRef.current);
 
@@ -83,7 +83,7 @@ const App = () => {
    * @param name
    * @param records
    */
-  const handleRecordUpdate = (updates: Pick<IUiProps, 'name' | 'type' | 'records'>) => {
+  const handleRecordUpdate = (updates: Pick<IDataProps, 'name' | 'type' | 'records'>) => {
 
     console.debug('📞 handling record update', updates);
 
@@ -95,6 +95,16 @@ const App = () => {
 
     uiPropsRef.current = {
       ...uiPropsRef.current,
+      chartOptions: {
+        ...uiPropsRef.current.chartOptions,
+        handleChartOptionsUpdate
+      },
+      handleTimeSpanUpdate
+    };
+    setUiProps(uiPropsRef.current);
+
+    dataPropsRef.current = {
+      ...dataPropsRef.current,
       ...updates,
       timeSpanData: {
         instantMin: instantMinData,
@@ -105,11 +115,9 @@ const App = () => {
         instantMax: instantMaxUser
       },
       handleRecordUpdate,
-      handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
-      handleChartOptionsUpdate
-    }
-    setUiProps(uiPropsRef.current);
+      handleTimeSpanUserUpdate
+    };
+    setDataProps(dataPropsRef.current);
 
   }
 
@@ -117,15 +125,13 @@ const App = () => {
 
     console.debug('📞 handling time span user update', timeSpanUser);
 
-    uiPropsRef.current = {
-      ...uiPropsRef.current,
+    dataPropsRef.current = {
+      ...dataPropsRef.current,
       timeSpanUser,
       handleRecordUpdate,
-      handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
-      handleChartOptionsUpdate
+      handleTimeSpanUserUpdate
     }
-    setUiProps(uiPropsRef.current);
+    setDataProps(dataPropsRef.current);
 
   }
 
@@ -139,7 +145,7 @@ const App = () => {
     setProfileProps(profilePropsRef.current);
   }
 
-  const emptyUiProps = (): IUiProps => {
+  const emptyDataProps = (): IDataProps => {
     return {
       name: '',
       type: 'Unknown',
@@ -152,6 +158,16 @@ const App = () => {
         instantMin: Date.now(),
         instantMax: Date.now(),
       },
+      handleRecordUpdate,
+      handleTimeSpanUserUpdate
+    }
+  }
+
+  const dataPropsRef = useRef<IDataProps>(emptyDataProps());
+  const [dataProps, setDataProps] = useState<IDataProps>(dataPropsRef.current);
+
+  const emptyUiProps = (): IUiProps => {
+    return {
       timeSpans: [],
       chartOptions: {
         title: 'CO₂ Measurements',
@@ -163,12 +179,10 @@ const App = () => {
         showDates: true,
         minColorVal: 600,
         maxColorVal: 1400,
-        stpColorVal: 4
+        stpColorVal: 4,
+        handleChartOptionsUpdate
       },
-      handleRecordUpdate,
-      handleTimeSpanUserUpdate,
-      handleTimeSpanUpdate,
-      handleChartOptionsUpdate
+      handleTimeSpanUpdate
     }
   }
 
@@ -188,7 +202,21 @@ const App = () => {
 
     console.debug('✨ building app component');
 
+    const storageKey = StorageUtil.DATA_PROPS_ID;
+    const loadedDataProps = StorageUtil.loadDataProps(storageKey);
+    if (loadedDataProps) {
+      dataPropsRef.current = loadedDataProps;
+      dataPropsRef.current = {
+        ...loadedDataProps,
+        handleRecordUpdate,
+        handleTimeSpanUserUpdate
+      }
+      setDataProps(dataPropsRef.current);
 
+    } else {
+      dataPropsRef.current = emptyDataProps();
+      setDataProps(dataPropsRef.current);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -197,38 +225,42 @@ const App = () => {
     return PROFILE_DEFS[profileProps.profileId].sProp;
   }
 
+  /**
+   * runs when the app loads or the profile is switched -> uiProps need to be rebuilt
+   */
   useEffect(() => {
 
     console.debug(`⚙ updating app component (profileProps)`, profileProps);
 
     const storageKey = resolveStorageKey();
-    const loadedProps = StorageUtil.loadProps(storageKey);
-    if (loadedProps) {
-
-      const timeSpans = loadedProps.timeSpans;
+    const loadedUiProps = StorageUtil.loadUiProps(storageKey);
+    if (loadedUiProps) {
+      const timeSpans = loadedUiProps.timeSpans;
       timeSpans.sort((a, b) => a.instantMin - b.instantMin);
       timeSpans.forEach(timeSpan => {
         if (!timeSpan.pattType) {
           timeSpan.pattType = timeSpan.spanType === 'display' ? 'HL' : 'FW'
         }
       });
-      if (!loadedProps.chartOptions.minColorVal) {
-        loadedProps.chartOptions.minColorVal = 400;
+
+      if (!loadedUiProps.chartOptions.minColorVal) {
+        loadedUiProps.chartOptions.minColorVal = 400;
       }
-      if (!loadedProps.chartOptions.maxColorVal) {
-        loadedProps.chartOptions.maxColorVal = 1400;
+      if (!loadedUiProps.chartOptions.maxColorVal) {
+        loadedUiProps.chartOptions.maxColorVal = 1400;
       }
-      if (!loadedProps.chartOptions.stpColorVal) {
-        loadedProps.chartOptions.stpColorVal = 10;
+      if (!loadedUiProps.chartOptions.stpColorVal) {
+        loadedUiProps.chartOptions.stpColorVal = 10;
       }
-      uiPropsRef.current = loadedProps;
+      uiPropsRef.current = loadedUiProps;
       uiPropsRef.current = {
-        ...loadedProps,
+        ...loadedUiProps,
         timeSpans: timeSpans,
-        handleRecordUpdate,
-        handleTimeSpanUserUpdate,
-        handleTimeSpanUpdate,
-        handleChartOptionsUpdate
+        chartOptions: {
+          ...uiPropsRef.current.chartOptions,
+          handleChartOptionsUpdate
+        },
+        handleTimeSpanUpdate
       }
       setUiProps(uiPropsRef.current);
 
@@ -241,20 +273,27 @@ const App = () => {
   }, [profileProps]);
 
   useEffect(() => {
-
-    console.debug(`⚙ updating app component (props)`, uiProps);
-    if (uiProps.records.length > 0) {
-      const storageKey = resolveStorageKey();
-      StorageUtil.storeUiProps(storageKey, uiProps);
+    console.debug(`⚙ updating app component (uiProps)`, uiProps);
+    if (!ObjectUtil.isEqual(uiProps, emptyUiProps())) {
+      StorageUtil.storeUiProps(resolveStorageKey(), uiProps);
+    } else {
+      // console.warn('clear ui props', uiProps);
+      // StorageUtil.clearUiProps(resolveStorageKey());
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uiProps]);
 
+  useEffect(() => {
+    console.debug(`⚙ updating app component (dataProps)`, dataProps);
+    StorageUtil.storeDataProps(StorageUtil.DATA_PROPS_ID, dataProps);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataProps]);
+
   return (
     <ThemeProvider theme={ThemeUtil.getTheme()} >
       <CssBaseline />
-      <UiComponent {...{ ...uiProps, ...profileProps }} />
+      <UiComponent {...{ ...uiProps, ...dataProps, ...profileProps }} />
     </ThemeProvider>
   );
 

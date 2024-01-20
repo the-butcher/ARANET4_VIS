@@ -1,4 +1,4 @@
-import { IUiProps } from "../components/IUiProps";
+import { IDataProps } from "../components/IUiProps";
 
 /**
  * definition for types that take care of parsing records from a binary excel file
@@ -8,16 +8,16 @@ import { IUiProps } from "../components/IUiProps";
  */
 export interface IWorksheetParser {
 
-    /**
-     * check if this parser accepts (aka is compatible) with the given set of headers
-     * @param headers
-     */
-    acceptsHeaders(headers: any[]): boolean;
+  /**
+   * check if this parser accepts (aka is compatible) with the given set of headers
+   * @param headers
+   */
+  acceptsHeaders(headers: any[]): boolean;
 
-    /**
-      * parse an array of records from the given set of data
-      * @param file
-      */
-    parseData(data: any[][]): Promise<Pick<IUiProps, 'type' | 'records'>>;
+  /**
+    * parse an array of records from the given set of data
+    * @param file
+    */
+  parseData(data: any[][]): Promise<Pick<IDataProps, 'type' | 'records'>>;
 
 }

@@ -1,4 +1,4 @@
-import { IRecord, IUiProps } from "../components/IUiProps";
+import { IDataProps, IRecord } from "../components/IUiProps";
 import { IDateParser, TimeUtil } from "../util/TimeUtil";
 import { IDelimitedParser } from "./IDelimitedParser";
 
@@ -20,7 +20,7 @@ export class DelimitedParserAranet implements IDelimitedParser {
         return Object.entries(TimeUtil.DATE_PARSERS).find(e => line.indexOf(e[0]) > 0);
     }
 
-    parseLines(lines: string[]): Promise<Pick<IUiProps, 'type' | 'records'>> {
+    parseLines(lines: string[]): Promise<Pick<IDataProps, 'type' | 'records'>> {
         return new Promise((resolve, reject) => {
 
             const dateParser = this.findDateParser(lines[0]); // Object.entries(TimeUtil.DATE_PARSERS).find(e => lines[0].indexOf(e[0]) > 0);

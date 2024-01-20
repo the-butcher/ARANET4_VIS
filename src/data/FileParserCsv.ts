@@ -1,4 +1,4 @@
-import { IUiProps } from "../components/IUiProps";
+import { IDataProps } from "../components/IUiProps";
 import { DelimitedParserAranet } from "./DelimitedParserAranet";
 import { DelimitedParserInkbird } from "./DelimitedParserInkbird";
 import { IDelimitedParser } from "./IDelimitedParser";
@@ -27,7 +27,7 @@ export class FileParserCsv implements IFileParser {
         return this.delimitedParsers.find(p => p.acceptsHeaders(line));
     }
 
-    async parseFile(file: File): Promise<Pick<IUiProps, 'type' | 'records'>> {
+    async parseFile(file: File): Promise<Pick<IDataProps, 'type' | 'records'>> {
         return new Promise((resolve, reject) => {
             var reader = new FileReader();
             reader.onload = e => {

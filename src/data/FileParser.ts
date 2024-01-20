@@ -1,4 +1,4 @@
-import { IUiProps } from "../components/IUiProps";
+import { IDataProps } from "../components/IUiProps";
 import { FileParserCsv } from "./FileParserCsv";
 import { FileParserXlsx } from "./FileParserXlsx";
 import { IFileParser } from "./IFileParser";
@@ -25,7 +25,7 @@ export class FileParser implements IFileParser {
         return this.fileParsers.find(p => p.getAcceptableMimeTypes().find(t => t === type));
     }
 
-    async parseFile(file: File): Promise<Pick<IUiProps, 'type' | 'records'>> {
+    async parseFile(file: File): Promise<Pick<IDataProps, 'type' | 'records'>> {
         return new Promise((resolve, reject) => {
             const fileParser = this.findFileParser(file.type);
             if (fileParser) {

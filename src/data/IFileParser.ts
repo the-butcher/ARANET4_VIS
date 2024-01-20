@@ -1,4 +1,4 @@
-import { IUiProps } from "../components/IUiProps";
+import { IDataProps } from "../components/IUiProps";
 
 /**
  * definition for types that take care of parsing records from a file
@@ -17,6 +17,6 @@ export interface IFileParser {
      * parse an array of records from the given file
      * @param file
      */
-    parseFile(file: File): Promise<Pick<IUiProps, 'type' | 'records'>>;
+    parseFile(file: File): Promise<Pick<IDataProps, 'type' | 'records'>>;
 
 }
