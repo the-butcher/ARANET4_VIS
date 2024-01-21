@@ -8,6 +8,7 @@ import { useEffect, useRef } from "react";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { IDataProps } from "./IUiProps";
 import { TimeUtil } from '../util/TimeUtil';
+import { adaptV4Theme } from '@mui/material';
 
 const CHART_DIV_ID_DETAIL = 'chartdivdetail';
 
@@ -74,22 +75,35 @@ const StepComponentChartOverview = (props: IDataProps) => {
         seriesCo2.yAxis = valueAxisCo2;
         seriesCo2.dataFields.dateX = "date";
         seriesCo2.dataFields.valueY = "co2";
+        seriesCo2.propertyFields.stroke = 'color';
 
         seriesCo2.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         seriesCo2.strokeWidth = 1;
         seriesCo2.strokeLinecap = 'round';
         seriesCo2.strokeLinejoin = 'round';
 
-        let chartData = records.map(r => {
-            return {
-                date: new Date(r.instant),
-                co2: r.co2,
-                instant: r.instant
+        let chartData: any[] = [];
+        let black = am4core.color('rgba(0, 0, 0, 1.0)');
+        let white = am4core.color('rgba(0, 0, 0, 0.0)');
+        let color = white;
+        let incr = Math.floor(records.length / window.innerWidth);
+        let incl: boolean;
+        for (let i = 0; i < records.length - 1; i++) {
+            if (records[i + 1].instant - records[i].instant > TimeUtil.MILLISECONDS_PER_MINUTE * 15) {
+                color = white;
+                incl = true;
+            } else {
+                incl = i % incr === 0 || color === white; // first segment after a white must be included
+                color = black;
             }
-        });
-        while (chartData.length > window.innerWidth) {
-            let count = 0;
-            chartData = chartData.filter(r => count++ % 2 === 0);
+            if (incl) {
+                chartData.push({
+                    date: new Date(records[i].instant),
+                    co2: records[i].co2,
+                    instant: records[i].instant,
+                    color
+                })
+            }
         }
 
         const axisRange = dateAxis.axisRanges.create();
@@ -99,14 +113,14 @@ const StepComponentChartOverview = (props: IDataProps) => {
 
         axisRange.axisFill.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
 
-        var pattern = new am4core.LinePattern();
-        pattern.width = 7;
-        pattern.height = 7;
-        pattern.strokeWidth = 1;
-        pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
-        pattern.rotation = -45;
+        // var pattern = new am4core.LinePattern();
+        // pattern.width = 7;
+        // pattern.height = 7;
+        // pattern.strokeWidth = 1;
+        // pattern.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
+        // pattern.rotation = -45;
 
-        axisRange.axisFill.fill = pattern;
+        axisRange.axisFill.fill = am4core.color('#1976d2'); // pattern;
         axisRange.axisFill.fillOpacity = 0.2;
         axisRange.axisFill.strokeOpacity = 0.2;
 

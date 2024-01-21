@@ -1,14 +1,14 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
-import { IconButton } from '@mui/material';
+import { Button } from '@mui/material';
 import moment from 'moment';
 import 'moment/locale/de';
 import { useEffect, useState } from 'react';
+import { ObjectUtil } from '../util/ObjectUtil';
+import { TimeUtil } from '../util/TimeUtil';
 import DividerComponent from './DividerComponent';
 import { DAYS_OF_WEEK, DAY_OF_WEEK, ITimeSpanNamed, PATT_TYPE, SPAN_TYPE } from './IUiProps';
 import TimeSpanComponent from './TimeSpanComponent';
-import { ObjectUtil } from '../util/ObjectUtil';
-import { TimeUtil } from '../util/TimeUtil';
 
 let timeSpanUpdateTimeout = -1;
 
@@ -140,7 +140,6 @@ const TimeSpanListComponent = (props: ITimeSpanListProperties) => {
         }
     }
 
-
     const handleFormSpanAdd = () => {
         handleTimeSpanUpdate(timeSpanNew);
     }
@@ -167,8 +166,6 @@ const TimeSpanListComponent = (props: ITimeSpanListProperties) => {
     }
 
     const [formSpans, setFormSpans] = useState<ITimeSpanNamed[]>(timeSpans);
-
-    const [timeSpanNewOpacity, setTimeSpanNewOpacity] = useState<string>('0.5');
     const [timeSpanNew, setTimeSpanNew] = useState<ITimeSpanNamed>({
         uuid: ObjectUtil.createId(),
         title: '',
@@ -203,8 +200,6 @@ const TimeSpanListComponent = (props: ITimeSpanListProperties) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [spanType, timeSpans]);
 
-
-
     return (
 
         <>
@@ -221,29 +216,39 @@ const TimeSpanListComponent = (props: ITimeSpanListProperties) => {
                                     handleTimeSpanDaysChanged={handleTimeSpanDaysChanged}
                                     handleTimeSpanPattToggle={handleTimeSpanPattToggle}
                                 />
-                                <IconButton
-                                    aria-label='delete chart marker'
-                                    title='delete chart marker'
+                                <Button
+                                    aria-label="outline"
+                                    variant="contained"
+                                    startIcon={<DeleteIcon fontSize="large" />}
                                     size="large"
+                                    sx={{ borderRadius: '20px' }}
                                     onClick={e => handleFormSpanDelete(value.uuid)}
-                                    sx={{ width: '54px', height: '54px' }}
                                 >
-                                    <DeleteIcon />
-                                </IconButton>
+                                    <span style={{ paddingTop: '4px' }}>DELETE</span>
+                                </Button>
                             </div>
                         ))
                     }
+
+                    <DividerComponent title='create new' />
+
+                </div> : <div>
                     {
-                        formSpans.length > 0 ? <>
-                            <DividerComponent title='create new' />
-                        </> : null
+                        spanType === 'display' ? <span>
+                            Use the inputs below to further limit data display to specific daily time spans. This could be school times, like 08:00 to 13:00, or office times, like 09:00 to 17:00.
+                        </span> : <span>
+                            Use the inputs below to add markers to the chart. This could be school hours, like 08:15 to 09:05, 09:10 to 10:00, and so on.
+                        </span>
+
+
                     }
-                </div> : null
+                    <span> Edit the provided inputs as suitable, then click 'CREATE' to apply your inputs to the chart. Multiple entries can be created, and edited later.</span>
+                    <DividerComponent title='create new' />
+                </div>
             }
+
             <div
-                onMouseOver={() => setTimeSpanNewOpacity('1.0')}
-                onMouseOut={() => setTimeSpanNewOpacity('0.5')}
-                style={{ transition: 'opacity 250ms ease-in-out', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', opacity: timeSpanNewOpacity }}
+                style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}
                 key={timeSpanNew.uuid}
             >
                 <TimeSpanComponent
@@ -254,15 +259,16 @@ const TimeSpanListComponent = (props: ITimeSpanListProperties) => {
                     handleTimeSpanDaysChanged={handleTimeSpanDaysChanged}
                     handleTimeSpanPattToggle={handleTimeSpanPattToggle}
                 />
-                <IconButton
-                    aria-label='create chart marker'
-                    title='create chart marker'
+                <Button
+                    aria-label="outline"
+                    variant="contained"
+                    startIcon={<MoreTimeIcon fontSize="large" />}
                     size="large"
+                    sx={{ borderRadius: '20px' }}
                     onClick={handleFormSpanAdd}
-                    sx={{ width: '54px', height: '54px' }}
                 >
-                    <MoreTimeIcon />
-                </IconButton>
+                    <span style={{ paddingTop: '4px' }}>CREATE</span>
+                </Button>
             </div>
         </>
 

@@ -7,6 +7,7 @@ export class ThemeUtil {
     static COLOR_CHART_BG = '#ffffff';
     static COLOR_PRIMARY = '#1976d2';
     static COLOR_SECONDARY = '#aaaaaa';
+    static COLOR_DIVIDER_DARK = '#125495';
 
     static getTheme(): Theme {
 
@@ -21,6 +22,11 @@ export class ThemeUtil {
             },
             components: {
 
+                MuiIconButton: {
+                    styleOverrides: {
+
+                    }
+                },
                 MuiAccordionSummary: {
                     styleOverrides: {
                         root: {

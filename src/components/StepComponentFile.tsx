@@ -12,6 +12,7 @@ import { TimeUtil } from "../util/TimeUtil";
 import DividerComponent from "./DividerComponent";
 import { IDataProps } from "./IUiProps";
 import StepComponentChartOverview from "./StepComponentChartOverview";
+import { ThemeUtil } from "../util/ThemeUtil";
 
 const getColor = (props: any) => {
     if (props.isDragAccept) {
@@ -51,7 +52,7 @@ const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
 
 const StepComponentFile = (props: IDataProps) => {
 
-    const { timeSpanData, timeSpanUser, handleTimeSpanUserUpdate, handleRecordUpdate } = { ...props };
+    const { timeSpanData, timeSpanUser, records, handleTimeSpanUserUpdate, handleRecordUpdate } = { ...props };
 
     const [errorDisplay, setErrorDisplay] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
@@ -165,56 +166,63 @@ const StepComponentFile = (props: IDataProps) => {
                     </div>
                 </Typography>
             </div>
-            <DividerComponent />
+            <DividerComponent title={'dropzone'} />
             <div className="container">
                 <Container {...getRootProps({ isFocused, isDragAccept, isDragReject })}>
                     <input {...getInputProps()} />
                     <p>drop CSV or XSLX file here, or click to select files</p>
                 </Container>
             </div>
-            <DividerComponent />
-            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: '46px' }}>
-                <DatePicker
-                    sx={{ margin: '6px', width: '220px' }}
-                    label="min (incl)"
-                    value={moment(new Date(timeSpanUser.instantMin))}
-                    minDate={moment(new Date(timeSpanData.instantMin))}
-                    maxDate={moment(new Date(timeSpanUser.instantMax))}
-                    onChange={handleDateUserMinChanged}
-                />
-                <DatePicker
-                    sx={{ margin: '6px', width: '220px' }}
-                    label="max (incl)"
-                    value={moment(new Date(timeSpanUser.instantMax))}
-                    minDate={moment(new Date(timeSpanUser.instantMin))}
-                    maxDate={moment(new Date(timeSpanData.instantMax))}
-                    onChange={handleDateUserMaxChanged}
-                />
-                <IconButton
-                    disabled={timeSpanUser.instantMin <= timeSpanData.instantMin}
-                    aria-label='1 day back'
-                    title='1 day back'
-                    size="large"
-                    onClick={() => handleDateUserMove(-TimeUtil.MILLISECONDS_PER____DAY)}
-                    sx={{ width: '54px', height: '54px' }}
-                >
-                    <UndoIcon />
-                </IconButton>
-                <IconButton
-                    disabled={timeSpanUser.instantMax >= timeSpanData.instantMax}
-                    aria-label='1 day forward'
-                    title='1 day forward'
-                    size="large"
-                    onClick={() => handleDateUserMove(TimeUtil.MILLISECONDS_PER____DAY)}
-                    sx={{ width: '54px', height: '54px' }}
-                >
-                    <RedoIcon />
-                </IconButton>
-            </div>
-            <div style={{ height: '10px' }} />
             {
-                props.records.length > 0 ? <StepComponentChartOverview{...props} /> : null
+                records.length > 0 ? <>
+                    <DividerComponent borderWidth={'2px'} />
+                    <Typography>Below you find an overview of the data imported. You can use the date fields provided to limit the range of data included in the chart.</Typography>
+                    <DividerComponent title={'data range'} />
+                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: '46px' }}>
+                        <DatePicker
+                            sx={{ margin: '6px', width: '220px' }}
+                            label="min (incl)"
+                            value={moment(new Date(timeSpanUser.instantMin))}
+                            minDate={moment(new Date(timeSpanData.instantMin))}
+                            maxDate={moment(new Date(timeSpanUser.instantMax))}
+                            onChange={handleDateUserMinChanged}
+                        />
+                        <DatePicker
+                            sx={{ margin: '6px', width: '220px' }}
+                            label="max (incl)"
+                            value={moment(new Date(timeSpanUser.instantMax))}
+                            minDate={moment(new Date(timeSpanUser.instantMin))}
+                            maxDate={moment(new Date(timeSpanData.instantMax))}
+                            onChange={handleDateUserMaxChanged}
+                        />
+                        <IconButton
+                            disabled={timeSpanUser.instantMin <= timeSpanData.instantMin}
+                            aria-label='1 day back'
+                            title='1 day back'
+                            size="large"
+                            onClick={() => handleDateUserMove(-TimeUtil.MILLISECONDS_PER____DAY)}
+                            sx={{ width: '54px', height: '54px' }}
+                        >
+                            <UndoIcon />
+                        </IconButton>
+                        <IconButton
+                            disabled={timeSpanUser.instantMax >= timeSpanData.instantMax}
+                            aria-label='1 day forward'
+                            title='1 day forward'
+                            size="large"
+                            onClick={() => handleDateUserMove(TimeUtil.MILLISECONDS_PER____DAY)}
+                            sx={{ width: '54px', height: '54px' }}
+                        >
+                            <RedoIcon />
+                        </IconButton>
+                    </div>
+                    <div style={{ height: '10px' }} />
+                    {
+                        props.records.length > 0 ? <StepComponentChartOverview{...props} /> : null
+                    }
+                </> : null
             }
+
         </>
     );
 

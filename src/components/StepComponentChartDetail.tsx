@@ -49,6 +49,8 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
     useEffect(() => {
 
+        console.debug(`⚙ updating chart component (timeSpanUserr, records, timeSpans)`, timeSpanUser, records, timeSpans);
+
         if (chartRef.current) {
             chartRef.current.dispose();
         }
@@ -65,8 +67,6 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
         const fontSize = chartOptions.fontSize / devicePixelRatio;
         const fontFamily = 'Courier Prime Sans';
-
-        console.debug(`⚙ updating chart component (timeSpanUserr, records, timeSpans)`, timeSpanUser, records, timeSpans);
 
         const instantMinUser = timeSpanUser.instantMin;
         const instantMaxUser = timeSpanUser.instantMax;
@@ -119,13 +119,11 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
         valueAxisCo2.title.fill = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         valueAxisCo2.tooltip!.disabled = true;
 
-
         chartRef.current.cursor = new am4charts.XYCursor();
         chartRef.current.cursor.exportable = true;
         chartRef.current.cursor.lineX.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         chartRef.current.cursor.lineY.disabled = true;
         chartRef.current.cursor.behavior = 'none';
-
 
         // filter for display ranges and a create a default display range in case no display ranges have been defined yet
         const timeSpansDisplay = timeSpans.filter(t => t.spanType === 'display');
@@ -270,15 +268,11 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                             series: seriesCo2
                         });
 
-                        //
-
                         // filter by time
                         const filteredRecords: IRecord[] = [];
                         records.forEach(r => {
                             if (r.instant >= instantMinDisplay && r.instant <= instantMaxDisplay) {
                                 filteredRecords.push(r);
-                            } else {
-
                             }
                         })
 
@@ -432,25 +426,30 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
         const legendData: any[] = [];
         const co2MaxGlobal = Math.max(...co2MaxLocals);
         let fill: string;
+        const showLegend = chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke);
 
-        if (chartOptions.showGradientFill) {
+        if (showLegend) {
             fill = getColorFromCo2(chartOptions.minColorVal);
+            if (chartOptions.showGradientFill) {
+                createValueRange(0, chartOptions.minColorVal, '', fill);
+            }
             legendData.push({
                 name: `${Math.round(chartOptions.minColorVal).toLocaleString()}ppm`,
                 fill
             });
-            createValueRange(0, chartOptions.minColorVal, '', fill);
         }
         for (let i = 0; i < chartOptions.stpColorVal; i++) {
             const co2A = chartOptions.minColorVal + i * co2Step;
             const co2B = chartOptions.minColorVal + (i + 1) * co2Step;
-            if (chartOptions.showGradientFill) {
+            if (showLegend) {
                 fill = getColorFromCo2(co2B);
+                if (chartOptions.showGradientFill) {
+                    createValueRange(co2A, co2B, '', fill);
+                }
                 legendData.push({
                     name: `${Math.round(co2B).toLocaleString()}ppm`,
                     fill
                 });
-                createValueRange(co2A, co2B, '', fill);
             }
         }
         if (chartOptions.showGradientFill) {
@@ -458,7 +457,7 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
             createValueRange(chartOptions.maxColorVal, co2MaxGlobal + 1000, '', fill);
         }
 
-        if (chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke)) {
+        if (showLegend) {
 
             let legend = new am4charts.Legend();
 
@@ -470,9 +469,8 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
             legend.parent = chartRef.current.chartContainer;
             legend.data = legendData;
+
         }
-
-
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timeSpanUser, records, timeSpans, chartOptions]);

@@ -41,7 +41,7 @@ const StepComponentRange = (props: IUiProps) => {
                     />
                 ))}
             </Tabs>
-            <DividerComponent style={{ position: 'relative', top: '-1px' }} title={activeTabName} />
+            <DividerComponent style={{ position: 'relative', top: '-1px' }} borderWidth={'2px'} title={activeTabName} />
             {
                 activeTabName === 'display' || activeTabName === 'markers' ? <TimeSpanListComponent
                     spanType={activeTabName}

@@ -22,7 +22,6 @@ const TimeSpanComponent = (props: ITimeSpanProperties) => {
     const { timeSpan, handleTimeSpanTitleChanged, handleTimeSpanMinChanged, handleTimeSpanMaxChanged, handleTimeSpanDaysChanged, handleTimeSpanPattToggle } = { ...props };
 
     return (
-
         <>
             <TextField
                 label="title"
@@ -84,11 +83,9 @@ const TimeSpanComponent = (props: ITimeSpanProperties) => {
                     {
                         timeSpan.pattType === 'HL' ? <CropSquareIcon sx={{ width: 20, height: 20 }} /> : <TextureIcon sx={{ width: 20, height: 20, rotate: timeSpan.pattType === 'BW' ? '90deg' : '0deg' }} />
                     }
-
                 </Avatar>
             </IconButton>
         </>
-
     );
 
 }
