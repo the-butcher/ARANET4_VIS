@@ -177,8 +177,12 @@ const StepComponentFile = (props: IDataProps) => {
                 records.length > 0 ? <>
                     <DividerComponent borderWidth={'2px'} />
                     <Typography>Below you find an overview of the data imported. You can use the date fields provided to limit the range of data included in the chart.</Typography>
+                    <DividerComponent title={'name/type'} />
+                    {
+                        props.name ? <span style={{ fontSize: '0.8rem' }}>{props.name}, ({props.type})</span> : null
+                    }
                     <DividerComponent title={'data range'} />
-                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: '46px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
                         <DatePicker
                             sx={{ margin: '6px', width: '220px' }}
                             label="min (incl)"
@@ -216,7 +220,6 @@ const StepComponentFile = (props: IDataProps) => {
                             <RedoIcon />
                         </IconButton>
                     </div>
-                    <div style={{ height: '10px' }} />
                     {
                         props.records.length > 0 ? <StepComponentChartOverview{...props} /> : null
                     }

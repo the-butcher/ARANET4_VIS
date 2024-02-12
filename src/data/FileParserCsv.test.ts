@@ -1,13 +1,17 @@
 import { DelimitedParserAranet } from "./DelimitedParserAranet";
 import { DelimitedParserInkbird } from "./DelimitedParserInkbird";
+import { DelimitedParserMoth } from "./DelimitedParserMoth";
 import { FileParserCsv } from "./FileParserCsv";
 
 test('it finds the correct delimited parser', () => {
 
     expect(new FileParserCsv().findDelimitedParser('Time	Co2	Unit')).toBeInstanceOf(DelimitedParserInkbird);
 
+    expect(new FileParserCsv().findDelimitedParser('time; co2; temperature; humidity; temperature_bme; humidity_bme; pressure; percent')).toBeInstanceOf(DelimitedParserMoth);
+
     expect(new FileParserCsv().findDelimitedParser('Time(dd/mm/yyyy),Carbon dioxide(ppm),Temperature(°C),Relative humidity(%),Atmospheric pressure(hPa)')).toBeInstanceOf(DelimitedParserAranet);
     expect(new FileParserCsv().findDelimitedParser('Time(mm/dd/yyyy),Carbon dioxide(ppm),Temperature(°C),Relative humidity(%),Atmospheric pressure(hPa)')).toBeInstanceOf(DelimitedParserAranet);
+    expect(new FileParserCsv().findDelimitedParser('Time(DD/MM/YYYY H:mm:ss),Carbon dioxide(ppm),Temperature(°C),Relative humidity(%),Atmospheric pressure(hPa)')).toBeInstanceOf(DelimitedParserAranet);
 
     expect(new FileParserCsv().findDelimitedParser('Time(xx/dd/yyyy),Carbon dioxide(ppm),Temperature(°C),Relative humidity(%),Atmospheric pressure(hPa)')).toBeUndefined();
 

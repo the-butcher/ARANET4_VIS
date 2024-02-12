@@ -1,6 +1,7 @@
 import { IDataProps } from "../components/IUiProps";
 import { DelimitedParserAranet } from "./DelimitedParserAranet";
 import { DelimitedParserInkbird } from "./DelimitedParserInkbird";
+import { DelimitedParserMoth } from "./DelimitedParserMoth";
 import { IDelimitedParser } from "./IDelimitedParser";
 import { IFileParser } from "./IFileParser";
 
@@ -15,7 +16,8 @@ export class FileParserCsv implements IFileParser {
     constructor() {
         this.delimitedParsers = [
             new DelimitedParserAranet(),
-            new DelimitedParserInkbird()
+            new DelimitedParserInkbird(),
+            new DelimitedParserMoth()
         ]
     }
 

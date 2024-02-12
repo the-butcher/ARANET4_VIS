@@ -6,25 +6,36 @@ import * as am4core from "@amcharts/amcharts4/core";
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 
 import { Fab } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Color } from '../util/Color';
 import { InterpolatedValue } from '../util/InterpolatedValue';
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
 import { DAYS_OF_WEEK, IDataProps, INDICES_OF_DAYS, IRecord, IUiProps, PATT_TYPE } from "./IUiProps";
+import { IDataPropsSk, IRecordSK } from './StepComponentChartSankey';
+
 
 const CHART_DIV_ID_OVERVIEW = 'chartdivoverview';
 interface IAxisAndSeries {
     axis: am4charts.DateAxis,
     series: am4charts.XYSeries
 }
+type ILinkFill = {
+    text: string;
+    fill: string;
+    co2A: number;
+    co2B: number;
+}
+
 
 const DISPLAY_SPAN_DEFAULT_ID = ObjectUtil.createId();
 
 const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
     const { timeSpanUser, records, timeSpans, chartOptions } = { ...props };
+
+    const [propsSK, setPropsSK] = useState<IDataPropsSk[]>([]);
 
     const chartRef = useRef<am4charts.XYChart>();
 
@@ -65,6 +76,34 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
             return new Color(interpolatorH.getOut(co2), interpolatorS.getOut(co2), interpolatorV.getOut(co2) * 0.90).getHex();
         }
 
+        const linkFills: ILinkFill[] = [];
+        linkFills.push({
+            fill: getColorFromCo2(chartOptions.minColorVal),
+            text: `${Math.round(chartOptions.minColorVal).toLocaleString()}ppm`,
+            co2A: 0,
+            co2B: chartOptions.minColorVal
+        });
+        for (let i = 0; i < chartOptions.stpColorVal; i++) {
+            const co2A = chartOptions.minColorVal + (i) * co2Step;
+            const co2B = chartOptions.minColorVal + (i + 1) * co2Step;
+            linkFills.push({
+                fill: getColorFromCo2(co2B),
+                text: `${Math.round(co2B).toLocaleString()}ppm`,
+                co2A,
+                co2B
+            });
+        }
+        linkFills.push({
+            fill: getColorFromCo2(10000),
+            text: '',
+            co2A: chartOptions.maxColorVal,
+            co2B: 10000
+        });
+
+        const _propsSK: IDataPropsSk[] = [];
+
+
+
         const fontSize = chartOptions.fontSize / devicePixelRatio;
         const fontFamily = 'Courier Prime Sans';
 
@@ -96,6 +135,7 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
         const valueAxisCo2 = chartRef.current.yAxes.push(new am4charts.ValueAxis());
         valueAxisCo2.extraMax = 0.001;
+        // valueAxisCo2.min = -1000;
         valueAxisCo2.renderer.grid.template.disabled = false;
         valueAxisCo2.renderer.grid.template.stroke = am4core.color(ThemeUtil.COLOR_CHART_FONT);
         valueAxisCo2.renderer.disabled = false;
@@ -111,7 +151,6 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
         });
 
         valueAxisCo2.exportable = true;
-        valueAxisCo2.min = 0;
         valueAxisCo2.title.text = "CO₂ ppm";
         valueAxisCo2.title.fontFamily = fontFamily;
         valueAxisCo2.title.fontSize = fontSize;
@@ -274,17 +313,93 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                             if (r.instant >= instantMinDisplay && r.instant <= instantMaxDisplay) {
                                 filteredRecords.push(r);
                             }
-                        })
-
-                        const chartData = filteredRecords.map(r => {
-                            return {
-                                date: new Date(r.instant),
-                                co2: r.co2,
-                                color: am4core.color(getColorFromCo2(r.co2)),
-                                instant: r.instant
-                            }
                         });
-                        co2MaxLocals.push(Math.max(...chartData.map(o => o.co2)));
+
+
+
+                        let fillLast: string = '';
+                        let instLast: number;
+                        let linkA = 0;
+
+                        const chartDataXY: any[] = [];
+                        const recordsSK: IRecordSK[] = [];
+                        linkFills.forEach(linkFill => {
+                            recordsSK.push({
+                                linkA: linkA++,
+                                linkB: linkFill.fill,
+                                instA: 0,
+                                instB: 0
+                            });
+                        });
+
+                        let rA: IRecord;
+                        let rB: IRecord;
+                        for (let i = 0; i < filteredRecords.length; i++) {
+
+                            rB = filteredRecords[i];
+
+                            if (i > 0) {
+
+                                rA = filteredRecords[i - 1];
+
+                                // eslint-disable-next-line no-loop-func
+                                const linkFill = linkFills.find(f => rB.co2 > f.co2A && rB.co2 <= f.co2B);
+                                if (linkFill!.fill !== fillLast || i === filteredRecords.length - 1) {
+
+                                    // as the value is leaving the previous range, close it
+                                    recordsSK.push({
+                                        linkA: linkA++,
+                                        linkB: fillLast!,
+                                        instA: instLast!,
+                                        instB: rA.instant
+                                    });
+
+                                    instLast = rA.instant;
+
+                                }
+                                fillLast = linkFill!.fill;
+
+                            } else {
+                                instLast = rB.instant;
+                                // eslint-disable-next-line no-loop-func
+                                fillLast = linkFills.find(f => rB.co2 > f.co2A && rB.co2 <= f.co2B)!.fill;
+                            }
+
+                            chartDataXY.push({
+                                date: new Date(rB.instant),
+                                co2: rB.co2,
+                                color: am4core.color(getColorFromCo2(rB.co2)),
+                                instant: rB.instant
+                            });
+
+                        }
+
+                        // console.log('chartDataSK', recordsSK);
+                        co2MaxLocals.push(Math.max(...chartDataXY.map(o => o.co2)));
+
+                        const uuidSK = `sk_${ObjectUtil.createId()}`;
+                        _propsSK.push({
+                            uuid: uuidSK,
+                            records: recordsSK
+                        });
+
+                        seriesCo2.events.on('ready', () => {
+
+                            const seriesContainer = seriesCo2.element?.node as SVGGElement;
+                            const seriesBounds = seriesContainer.getBoundingClientRect();
+
+                            setTimeout(() => {
+                                const chartSKDiv = document.getElementById(uuidSK);
+                                // console.log('chartSKDiv', uuidSK, chartSKDiv);
+                                if (chartSKDiv) {
+                                    chartSKDiv.style.width = `${seriesBounds.width}px`;
+                                    chartSKDiv.style.left = `${seriesBounds.x}px`;
+                                    chartSKDiv.style.top = '1900px'; //'`${seriesBounds.y + seriesBounds.height + 1300}px`
+                                }
+
+                            }, 500);
+
+                        })
 
                         const createDateRange = (instant1: number, instant2: number, text: string, opacity: number, position: 'top' | 'bot', patt: PATT_TYPE) => {
 
@@ -357,6 +472,24 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
                         }
 
+                        // const createDateRange2 = (instant1: number, instant2: number, fill: string) => {
+
+                        //     const axisRange = dateAxis.axisRanges.create();
+                        //     axisRange.value = new Date(instant1).getTime();
+                        //     axisRange.endValue = new Date(instant2).getTime();
+                        //     axisRange.label.inside = true;
+
+                        //     axisRange.axisFill.fill = am4core.color(fill); // pattern;
+                        //     axisRange.axisFill.fillOpacity = 0.75; // opacity;
+                        //     axisRange.axisFill.stroke = am4core.color('#000000');
+                        //     axisRange.axisFill.strokeOpacity = 0.0;
+                        //     axisRange.grid.strokeOpacity = 0.0;
+
+                        // };
+                        // recordsSK.forEach(recordSK => {
+                        //     createDateRange2(recordSK.instA, recordSK.instB, recordSK.linkB);
+                        // })
+
                         timeSpans.filter(t => t.spanType === 'markers').forEach(timeSpanMarkers => {
 
                             if (timeSpanMarkers.days.find(d => d === dayOfWeek)) {
@@ -375,7 +508,7 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                             createDateRange(instantMinDisplay, instantMaxDisplay, chartOptions.showDates ? `${timeSpanDisplay.title} ${dayOfWeek}, ${TimeUtil.formatCategoryDateFull(instantDayUser)}` : `${timeSpanDisplay.title} ${dayOfWeek}`, 0.15, 'top', timeSpanDisplay.pattType);
                         }
 
-                        seriesCo2.data = chartData;
+                        seriesCo2.data = chartDataXY;
 
                     }
 
@@ -423,39 +556,19 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
         }
 
-        const legendData: any[] = [];
-        const co2MaxGlobal = Math.max(...co2MaxLocals);
-        let fill: string;
         const showLegend = chartOptions.showLegend && (chartOptions.showGradientFill || chartOptions.showGradientStroke);
-
-        if (showLegend) {
-            fill = getColorFromCo2(chartOptions.minColorVal);
-            if (chartOptions.showGradientFill) {
-                createValueRange(0, chartOptions.minColorVal, '', fill);
-            }
-            legendData.push({
-                name: `${Math.round(chartOptions.minColorVal).toLocaleString()}ppm`,
-                fill
-            });
-        }
-        for (let i = 0; i < chartOptions.stpColorVal; i++) {
-            const co2A = chartOptions.minColorVal + i * co2Step;
-            const co2B = chartOptions.minColorVal + (i + 1) * co2Step;
-            if (showLegend) {
-                fill = getColorFromCo2(co2B);
-                if (chartOptions.showGradientFill) {
-                    createValueRange(co2A, co2B, '', fill);
-                }
+        const legendData: any[] = [];
+        linkFills.forEach(linkFill => {
+            if (showLegend && linkFill.text !== '') {
                 legendData.push({
-                    name: `${Math.round(co2B).toLocaleString()}ppm`,
-                    fill
+                    name: linkFill.text,
+                    fill: linkFill.fill
                 });
             }
-        }
-        if (chartOptions.showGradientFill) {
-            fill = getColorFromCo2(co2MaxGlobal + 1000);
-            createValueRange(chartOptions.maxColorVal, co2MaxGlobal + 1000, '', fill);
-        }
+            if (chartOptions.showGradientFill) {
+                createValueRange(linkFill.co2A, linkFill.co2B, '', linkFill.fill);
+            }
+        });
 
         if (showLegend) {
 
@@ -471,6 +584,8 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
             legend.data = legendData;
 
         }
+
+        setPropsSK(_propsSK);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timeSpanUser, records, timeSpans, chartOptions]);
@@ -498,6 +613,9 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                     <AddAPhotoIcon sx={{ paddingRight: '4px' }} />
                     <span style={{ paddingTop: '4px' }}>EXPORT TO PNG [X]</span>
                 </Fab>
+                {/* {
+                    propsSK.map((value, index) => <StepComponentChartSankey key={value.uuid} {...value} />)
+                } */}
             </div>
         </>
     );

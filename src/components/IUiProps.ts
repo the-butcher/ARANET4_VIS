@@ -20,7 +20,7 @@ export const INDICES_OF_DAYS: DAY_OF_WEEK[] = [
 
 export type PATT_TYPE = 'FW' | 'BW' | 'HL';
 export type SPAN_TYPE = 'display' | 'markers';
-export type FILE_TYPE = 'Aranet4' | 'SmartAir' | 'Inkbird' | 'Unknown';
+export type FILE_TYPE = 'Aranet4' | 'SmartAir' | 'Inkbird' | 'Moth' | 'Unknown';
 
 export interface IRecord {
     instant: number;

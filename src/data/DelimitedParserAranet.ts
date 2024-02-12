@@ -7,17 +7,18 @@ import { IDelimitedParser } from "./IDelimitedParser";
  */
 export class DelimitedParserAranet implements IDelimitedParser {
 
-    private static readonly HEADER_NAME_TIME_A = 'Time(dd/mm/yyyy)';
-    private static readonly HEADER_NAME_TIME_B = 'Time(mm/dd/yyyy)';
+    private static readonly HEADER_NAME_TIME_A = 'time(dd/mm/yyyy';
+    private static readonly HEADER_NAME_TIME_B = 'time(mm/dd/yyyy';
     private static readonly HEADER_NAME__CO2 = 'Carbon dioxide(ppm)';
 
     acceptsHeaders(line: string): boolean {
         const headers = line.split(',').map(h => h.trim());
-        return (headers.indexOf(DelimitedParserAranet.HEADER_NAME_TIME_A) >= 0 || headers.indexOf(DelimitedParserAranet.HEADER_NAME_TIME_B) >= 0) && headers.indexOf(DelimitedParserAranet.HEADER_NAME__CO2) >= 0;
+        return headers.some(h => (h.toLowerCase().startsWith(DelimitedParserAranet.HEADER_NAME_TIME_A) || h.toLowerCase().startsWith(DelimitedParserAranet.HEADER_NAME_TIME_B))) && headers.indexOf(DelimitedParserAranet.HEADER_NAME__CO2) >= 0;
+        // return (headers.indexOf(DelimitedParserAranet.HEADER_NAME_TIME_A) >= 0 || headers.indexOf(DelimitedParserAranet.HEADER_NAME_TIME_B) >= 0) && headers.indexOf(DelimitedParserAranet.HEADER_NAME__CO2) >= 0;
     }
 
     findDateParser(line: string): [string, IDateParser] | undefined {
-        return Object.entries(TimeUtil.DATE_PARSERS).find(e => line.indexOf(e[0]) > 0);
+        return Object.entries(TimeUtil.DATE_PARSERS).find(e => line.toLowerCase().indexOf(e[0]) > 0);
     }
 
     parseLines(lines: string[]): Promise<Pick<IDataProps, 'type' | 'records'>> {

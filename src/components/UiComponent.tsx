@@ -11,6 +11,7 @@ import StepComponentFile from './StepComponentFile';
 import StepComponentRange from './StepComponentRange';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import StepComponentChartSankey from './StepComponentChartSankey';
 
 const PANEL_ID___FILE = 'panel_id___file';
 const PANEL_ID_RANGES = 'panel_id_ranges';
@@ -59,9 +60,9 @@ const UiComponent = (props: IUiProps & IDataProps & IProfileProps) => {
                             <Typography>
                                 CO₂ SENSOR DATA
                             </Typography>
-                            {
+                            {/* {
                                 props.name ? <span style={{ fontSize: '0.8rem' }}> :: {props.name}, ({props.type})</span> : null
-                            }
+                            } */}
                         </div>
                     </AccordionSummary>
                     <AccordionDetails>
@@ -78,7 +79,9 @@ const UiComponent = (props: IUiProps & IDataProps & IProfileProps) => {
                         sx={{ backgroundColor: ThemeUtil.COLOR_ACCORDION_BG, height: '42px' }}
                     >
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexGrow: '10', borderBottom: 1, borderColor: 'divider' }}>
-                            <Typography>
+                            <Typography
+                                sx={{ whiteSpace: 'nowrap' }}
+                            >
                                 CHART CONFIGURATION
                             </Typography>
                             <div style={{ width: '50px' }}></div>
@@ -94,7 +97,7 @@ const UiComponent = (props: IUiProps & IDataProps & IProfileProps) => {
                                             key={`PROFILE_${index}`}
                                             // label={`${index}`}
                                             aria-label={`PROFILE ${index}`}
-                                            sx={{ padding: '0px', margin: '0px' }}
+                                            sx={{ padding: '0px', margin: '0px', minWidth: '70px!important' }}
                                             icon={StorageUtil.hasProps(value.sProp) ? value.icon1 : value.icon0}
                                         />
                                     )
@@ -116,6 +119,7 @@ const UiComponent = (props: IUiProps & IDataProps & IProfileProps) => {
                     <a href="https://github.com/the-butcher/ARANET4_VIS" target='_blank' rel="noreferrer" style={{ margin: '11px 22px', whiteSpace: 'nowrap' }}>https://github.com/the-butcher/ARANET4_VIS (instructions here)</a>
                 </Paper>
             </Box>
+
         </LocalizationProvider >
 
     );

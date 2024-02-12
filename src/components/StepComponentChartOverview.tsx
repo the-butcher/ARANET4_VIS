@@ -86,7 +86,7 @@ const StepComponentChartOverview = (props: IDataProps) => {
         let black = am4core.color('rgba(0, 0, 0, 1.0)');
         let white = am4core.color('rgba(0, 0, 0, 0.0)');
         let color = white;
-        let incr = Math.floor(records.length / window.innerWidth);
+        let incr = Math.max(1, Math.floor(records.length / window.innerWidth));
         let incl: boolean;
         for (let i = 0; i < records.length - 1; i++) {
             if (records[i + 1].instant - records[i].instant > TimeUtil.MILLISECONDS_PER_MINUTE * 15) {
