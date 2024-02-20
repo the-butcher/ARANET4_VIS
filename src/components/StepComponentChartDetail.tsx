@@ -6,14 +6,13 @@ import * as am4core from "@amcharts/amcharts4/core";
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 
 import { Fab } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Color } from '../util/Color';
 import { InterpolatedValue } from '../util/InterpolatedValue';
 import { ObjectUtil } from "../util/ObjectUtil";
 import { ThemeUtil } from "../util/ThemeUtil";
 import { TimeUtil } from "../util/TimeUtil";
 import { DAYS_OF_WEEK, IDataProps, INDICES_OF_DAYS, IRecord, IUiProps, PATT_TYPE } from "./IUiProps";
-import { IDataPropsSk, IRecordSK } from './StepComponentChartSankey';
 
 
 const CHART_DIV_ID_OVERVIEW = 'chartdivoverview';
@@ -35,7 +34,7 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
     const { timeSpanUser, records, timeSpans, chartOptions } = { ...props };
 
-    const [propsSK, setPropsSK] = useState<IDataPropsSk[]>([]);
+    // const [propsSK, setPropsSK] = useState<IDataPropsSk[]>([]);
 
     const chartRef = useRef<am4charts.XYChart>();
 
@@ -100,9 +99,7 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
             co2B: 10000
         });
 
-        const _propsSK: IDataPropsSk[] = [];
-
-
+        // const _propsSK: IDataPropsSk[] = [];
 
         const fontSize = chartOptions.fontSize / devicePixelRatio;
         const fontFamily = 'Courier Prime Sans';
@@ -315,55 +312,58 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                             }
                         });
 
-
-
-                        let fillLast: string = '';
-                        let instLast: number;
-                        let linkA = 0;
+                        // let fillLast: string = '';
+                        // let instLast: number;
+                        // let linkA = 0;
 
                         const chartDataXY: any[] = [];
-                        const recordsSK: IRecordSK[] = [];
-                        linkFills.forEach(linkFill => {
-                            recordsSK.push({
-                                linkA: linkA++,
-                                linkB: linkFill.fill,
-                                instA: 0,
-                                instB: 0
-                            });
-                        });
+                        // const recordsSK: IRecordSK[] = [];
+                        // linkFills.forEach(linkFill => {
+                        //     recordsSK.push({
+                        //         linkA: linkA++,
+                        //         linkB: linkFill.fill,
+                        //         instA: 0,
+                        //         instB: 0
+                        //     });
+                        // });
 
-                        let rA: IRecord;
+                        // let rA: IRecord;
                         let rB: IRecord;
                         for (let i = 0; i < filteredRecords.length; i++) {
 
                             rB = filteredRecords[i];
 
-                            if (i > 0) {
+                            // if (fillLast !== '') {
 
-                                rA = filteredRecords[i - 1];
+                            //     rA = filteredRecords[i - 1];
 
-                                // eslint-disable-next-line no-loop-func
-                                const linkFill = linkFills.find(f => rB.co2 > f.co2A && rB.co2 <= f.co2B);
-                                if (linkFill!.fill !== fillLast || i === filteredRecords.length - 1) {
+                            //     // eslint-disable-next-line no-loop-func
+                            //     const linkFill = linkFills.find(f => rB.co2 > f.co2A && rB.co2 <= f.co2B);
+                            //     if (linkFill) {
+                            //         if (linkFill!.fill !== fillLast || i === filteredRecords.length - 1) {
 
-                                    // as the value is leaving the previous range, close it
-                                    recordsSK.push({
-                                        linkA: linkA++,
-                                        linkB: fillLast!,
-                                        instA: instLast!,
-                                        instB: rA.instant
-                                    });
+                            //             // as the value is leaving the previous range, close it
+                            //             recordsSK.push({
+                            //                 linkA: linkA++,
+                            //                 linkB: fillLast!,
+                            //                 instA: instLast!,
+                            //                 instB: rA.instant
+                            //             });
 
-                                    instLast = rA.instant;
+                            //             instLast = rA.instant;
 
-                                }
-                                fillLast = linkFill!.fill;
+                            //         }
+                            //         fillLast = linkFill!.fill;
+                            //     }
 
-                            } else {
-                                instLast = rB.instant;
-                                // eslint-disable-next-line no-loop-func
-                                fillLast = linkFills.find(f => rB.co2 > f.co2A && rB.co2 <= f.co2B)!.fill;
-                            }
+                            // } else {
+                            //     instLast = rB.instant;
+                            //     // eslint-disable-next-line no-loop-func
+                            //     const linkFill = linkFills.find(f => rB.co2 > f.co2A && rB.co2 <= f.co2B);
+                            //     if (linkFill) {
+                            //         fillLast = linkFill.fill;
+                            //     }
+                            // }
 
                             chartDataXY.push({
                                 date: new Date(rB.instant),
@@ -377,29 +377,29 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                         // console.log('chartDataSK', recordsSK);
                         co2MaxLocals.push(Math.max(...chartDataXY.map(o => o.co2)));
 
-                        const uuidSK = `sk_${ObjectUtil.createId()}`;
-                        _propsSK.push({
-                            uuid: uuidSK,
-                            records: recordsSK
-                        });
+                        // const uuidSK = `sk_${ObjectUtil.createId()}`;
+                        // _propsSK.push({
+                        //     uuid: uuidSK,
+                        //     records: recordsSK
+                        // });
 
-                        seriesCo2.events.on('ready', () => {
+                        // seriesCo2.events.on('ready', () => {
 
-                            const seriesContainer = seriesCo2.element?.node as SVGGElement;
-                            const seriesBounds = seriesContainer.getBoundingClientRect();
+                        //     const seriesContainer = seriesCo2.element?.node as SVGGElement;
+                        //     const seriesBounds = seriesContainer.getBoundingClientRect();
 
-                            setTimeout(() => {
-                                const chartSKDiv = document.getElementById(uuidSK);
-                                // console.log('chartSKDiv', uuidSK, chartSKDiv);
-                                if (chartSKDiv) {
-                                    chartSKDiv.style.width = `${seriesBounds.width}px`;
-                                    chartSKDiv.style.left = `${seriesBounds.x}px`;
-                                    chartSKDiv.style.top = '1900px'; //'`${seriesBounds.y + seriesBounds.height + 1300}px`
-                                }
+                        //     setTimeout(() => {
+                        //         const chartSKDiv = document.getElementById(uuidSK);
+                        //         // console.log('chartSKDiv', uuidSK, chartSKDiv);
+                        //         if (chartSKDiv) {
+                        //             chartSKDiv.style.width = `${seriesBounds.width}px`;
+                        //             chartSKDiv.style.left = `${seriesBounds.x}px`;
+                        //             chartSKDiv.style.top = '1900px'; //'`${seriesBounds.y + seriesBounds.height + 1300}px`
+                        //         }
 
-                            }, 500);
+                        //     }, 500);
 
-                        })
+                        // });
 
                         const createDateRange = (instant1: number, instant2: number, text: string, opacity: number, position: 'top' | 'bot', patt: PATT_TYPE) => {
 
@@ -471,24 +471,6 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
                             axisRange.bullet = axisRangeBullet;
 
                         }
-
-                        // const createDateRange2 = (instant1: number, instant2: number, fill: string) => {
-
-                        //     const axisRange = dateAxis.axisRanges.create();
-                        //     axisRange.value = new Date(instant1).getTime();
-                        //     axisRange.endValue = new Date(instant2).getTime();
-                        //     axisRange.label.inside = true;
-
-                        //     axisRange.axisFill.fill = am4core.color(fill); // pattern;
-                        //     axisRange.axisFill.fillOpacity = 0.75; // opacity;
-                        //     axisRange.axisFill.stroke = am4core.color('#000000');
-                        //     axisRange.axisFill.strokeOpacity = 0.0;
-                        //     axisRange.grid.strokeOpacity = 0.0;
-
-                        // };
-                        // recordsSK.forEach(recordSK => {
-                        //     createDateRange2(recordSK.instA, recordSK.instB, recordSK.linkB);
-                        // })
 
                         timeSpans.filter(t => t.spanType === 'markers').forEach(timeSpanMarkers => {
 
@@ -585,7 +567,7 @@ const StepComponentChartDetail = (props: IUiProps & IDataProps) => {
 
         }
 
-        setPropsSK(_propsSK);
+        // setPropsSK(_propsSK);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timeSpanUser, records, timeSpans, chartOptions]);

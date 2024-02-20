@@ -5,7 +5,6 @@ import * as am4charts from "@amcharts/amcharts4/charts";
 import * as am4core from "@amcharts/amcharts4/core";
 
 import { useEffect, useRef } from "react";
-import { ObjectUtil } from '../util/ObjectUtil';
 import { ThemeUtil } from '../util/ThemeUtil';
 
 export type IRecordSK = {
