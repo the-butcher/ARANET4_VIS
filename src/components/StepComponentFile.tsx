@@ -154,14 +154,14 @@ const StepComponentFile = (props: IDataProps) => {
             </Snackbar>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography component={'div'}>
-                    <div>Please start by exporting CSV or XlSX data from your CO₂ device to a location of your choice. Then import the CSV or XLSX file here using the button below.</div>
+                    <div>Please start by exporting CSV or XLSX data from your CO₂ device to a location of your choice. Then import the CSV or XLSX file here using the button below.</div>
                     <div>
                         <br />
                         Currently there is support for:
                         <ul>
                             <li>Aranet CSV.</li>
                             <li>Inkbird CSV (experimental).</li>
-                            <li>Smartair (qingping) XSLX (experimental).</li>
+                            <li>Smartair (qingping) XLSX (experimental).</li>
                         </ul>
                     </div>
                 </Typography>
@@ -170,7 +170,7 @@ const StepComponentFile = (props: IDataProps) => {
             <div className="container">
                 <Container {...getRootProps({ isFocused, isDragAccept, isDragReject })}>
                     <input {...getInputProps()} />
-                    <p>drop CSV or XSLX file here, or click to select files</p>
+                    <p>drop CSV or XLSX file here, or click to select files</p>
                 </Container>
             </div>
             {
